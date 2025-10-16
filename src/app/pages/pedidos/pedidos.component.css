@@ -1,0 +1,76 @@
+/* Estilos específicos para el componente de pedidos */
+.container {
+  min-height: calc(100vh - 80px);
+}
+
+/* Animaciones personalizadas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Estilos para formularios responsivos */
+@media (max-width: 768px) {
+  .grid-cols-5 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .max-w-4xl {
+    max-width: 95%;
+  }
+}
+
+/* Estilo para campos readonly */
+input[readonly] {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* Estilo para botones deshabilitados */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilo para la tabla de detalles */
+.table-auto tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Estilo para el modal */
+.fixed.inset-0 {
+  z-index: 1000;
+}
+
+/* Estilo para scrollbar en modales */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

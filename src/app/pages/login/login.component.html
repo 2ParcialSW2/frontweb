@@ -1,0 +1,115 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <!-- Logo y título -->
+    <div class="text-center">
+      <svg class="mx-auto h-16 w-16 text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6C3 4.34315 4.34315 3 6 3H18C19.6569 3 21 4.34315 21 6V18C21 19.6569 19.6569 21 18 21H6C4.34315 21 3 19.6569 3 18V6Z" stroke="currentColor" stroke-width="2"/>
+        <path d="M3 9H21" stroke="currentColor" stroke-width="2"/>
+        <path d="M9 9V21" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <h2 class="mt-4 text-3xl font-bold text-gray-900">Sistema MRP</h2>
+      <p class="mt-2 text-sm text-gray-600">Gestión de Recursos y Planificación</p>
+    </div>
+
+    <!-- Tarjeta de login -->
+    <div class="mt-8 bg-white py-8 px-6 shadow-xl rounded-xl backdrop-blur-sm bg-opacity-80 border border-gray-100">
+      <div class="mb-6">
+        <h3 class="text-xl font-medium text-gray-900 text-center">Iniciar sesión</h3>
+        <p class="text-sm text-center text-gray-500 mt-1">Ingresa tus credenciales para acceder</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Campo de email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">
+            Correo electrónico
+          </label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+              </svg>
+            </div>
+            <input
+              id="email"
+              [(ngModel)]="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="tucorreo@ejemplo.com"
+              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Campo de contraseña -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">
+            Contraseña
+          </label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <input
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              placeholder="••••••••"
+              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Recordarme y Recuperar contraseña -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input id="remember_me" name="remember_me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+              Recordarme
+            </label>
+          </div>
+
+          <div class="text-sm">
+            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+        </div>
+
+        <!-- Botón de acceso -->
+        <div>
+          <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+              <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+              </svg>
+            </span>
+            Iniciar sesión
+          </button>
+        </div>
+        <!-- Enlace para registro -->
+    <div class="text-center mt-6">
+      <p class="text-sm text-gray-600">
+      ¿No tienes cuenta? 
+        <a [routerLink]="['/registro']" class="font-medium text-blue-600 hover:text-blue-500">
+        Regístrate
+      </a>
+      </p>
+    </div>
+      </form>
+    </div>
+  
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-500">
+      <p>© 2025 Sistema MRP. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</div>

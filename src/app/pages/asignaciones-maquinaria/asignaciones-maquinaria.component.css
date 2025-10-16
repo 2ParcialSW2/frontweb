@@ -1,0 +1,73 @@
+/* Estilos para el componente de asignaciones de maquinaria */
+.tab-button {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.tab-button.active {
+  @apply bg-blue-600 text-white;
+}
+
+.tab-button.inactive {
+  @apply text-gray-700 hover:bg-gray-100;
+}
+
+.estado-select {
+  @apply text-sm border border-gray-300 rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+}
+
+.action-buttons {
+  @apply flex justify-center space-x-2;
+}
+
+.action-button {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.action-button:hover {
+  transform: scale(1.1);
+}
+
+/* Estilos para los badges de estado */
+.badge-disponible {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-en-uso {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.badge-reservada {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Animaciones suaves */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para la tabla responsive */
+.table-container {
+  @apply overflow-x-auto;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    font-size: 0.875rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+} 

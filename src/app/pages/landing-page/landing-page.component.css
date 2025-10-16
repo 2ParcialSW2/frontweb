@@ -1,0 +1,23 @@
+#testimonials-container {
+    overflow: hidden;
+    width: 100%;
+}
+
+#testimonials-track {
+    display: flex;
+    animation: scrollLoop 10s linear infinite;
+}
+
+.testimonial-card {
+    flex: 0 0 auto;
+}
+
+@keyframes scrollLoop {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}

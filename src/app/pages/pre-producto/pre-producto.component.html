@@ -1,0 +1,601 @@
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Gestión de Pre-productos</h1>
+    <p class="text-gray-600">Administra los pre-productos y sus planificaciones de maquinaria</p>
+  </div>
+
+  <!-- BARRA SUPERIOR DE FILTRO Y BOTÓN NUEVO -->
+  <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="relative flex-grow max-w-md">
+        <input type="text" [(ngModel)]="filtro" (input)="buscarPreProductos()" placeholder="Buscar pre-producto..."
+          class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" />
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+          </svg>
+        </div>
+      </div>
+
+      <button (click)="openRegisterModal()" type="button"
+        class="flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 transition-colors">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Nuevo Pre-producto
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLA DE PREPRODUCTOS MEJORADA -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th class="px-6 py-3">ID</th>
+            <th class="px-6 py-3">Producto</th>
+            <th class="px-6 py-3">Stock</th>
+            <th class="px-6 py-3">Tiempo</th>
+            <th class="px-6 py-3">Planificación</th>
+            <th class="px-6 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of preProductosFiltrados" class="border-b hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 font-medium text-gray-900">{{ p.id }}</td>
+            
+            <!-- COLUMNA PRODUCTO MEJORADA -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <img *ngIf="p.url_Image" [src]="p.url_Image" alt="imagen" 
+                       class="h-12 w-12 object-cover rounded-lg border border-gray-200" />
+                  <div *ngIf="!p.url_Image" 
+                       class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ p.nombre }}</p>
+                  <p class="text-sm text-gray-500 truncate">{{ p.descripcion }}</p>
+                </div>
+              </div>
+            </td>
+            
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [class]="p.stock > 10 ? 'bg-green-100 text-green-800' : 
+                             p.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
+                             'bg-red-100 text-red-800'">
+                {{ p.stock }} unidades
+              </span>
+            </td>
+            
+            <td class="px-6 py-4">
+              <span class="text-sm text-gray-900">{{ p.tiempo }}</span>
+            </td>
+            
+            <!-- COLUMNA PLANIFICACIÓN MEJORADA -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2">
+                  <div class="relative">
+                    <div class="w-3 h-3 rounded-full transition-all duration-300"
+                         [ngClass]="{
+                           'bg-green-500 shadow-green-300 shadow-lg': tienePlanificacionCompleta(p.id),
+                           'bg-yellow-500 shadow-yellow-300 shadow-lg': tienePlanificacionParcial(p.id),
+                           'bg-gray-400': !tienePlanificacion(p.id)
+                         }">
+                    </div>
+                    <div *ngIf="tienePlanificacion(p.id)" 
+                         class="absolute inset-0 w-3 h-3 rounded-full animate-ping"
+                         [ngClass]="{
+                           'bg-green-500': tienePlanificacionCompleta(p.id),
+                           'bg-yellow-500': tienePlanificacionParcial(p.id)
+                         }">
+                    </div>
+                  </div>
+                  
+                  <span class="text-xs font-medium transition-colors duration-300"
+                        [ngClass]="{
+                          'text-green-700': tienePlanificacionCompleta(p.id),
+                          'text-yellow-700': tienePlanificacionParcial(p.id),
+                          'text-gray-500': !tienePlanificacion(p.id)
+                        }">
+                    {{ obtenerEstadoPlanificacion(p.id) }}
+                  </span>
+                </div>
+
+                <div *ngIf="resumenesPlanificacion.get(p.id)" class="text-xs text-gray-500">
+                  ({{ resumenesPlanificacion.get(p.id).totalMaquinarias }} máq.)
+                </div>
+              </div>
+            </td>
+            
+            <!-- ACCIONES MEJORADAS -->
+            <td class="px-6 py-4">
+              <div class="flex items-center space-x-2">
+                <!-- BOTÓN PLANIFICACIÓN -->
+                <button
+                  (click)="openPlanificacionModal(p)"
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-all duration-200"
+                  [ngClass]="{
+                    'text-green-900 bg-green-100 hover:bg-green-200 border-green-200': tienePlanificacionCompleta(p.id),
+                    'text-yellow-900 bg-yellow-100 hover:bg-yellow-200 border-yellow-200': tienePlanificacionParcial(p.id),
+                    'text-blue-900 bg-blue-100 hover:bg-blue-200 border-blue-200': !tienePlanificacion(p.id)
+                  }"
+                  title="Gestionar planificación de maquinarias">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  Planificar
+                </button>
+
+                <!-- BOTÓN EDITAR -->
+                <button
+                  (click)="openUpdateModal(p)"
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-900 bg-indigo-100 border border-indigo-200 rounded-md hover:bg-indigo-200 transition-colors"
+                  title="Editar pre-producto">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  Editar
+                </button>
+
+                <!-- DROPDOWN ACCIONES ADICIONALES -->
+                <div class="relative inline-block text-left">
+                  <button
+                    type="button"
+                    class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200 transition-colors"
+                    [id]="'menu-button-' + p.id"
+                    (click)="toggleDropdown(p.id)">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                    </svg>
+                  </button>
+
+                  <div
+                    *ngIf="dropdownOpen === p.id"
+                    class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div class="py-1">
+                      <button
+                        (click)="duplicarPlanificacion(p); toggleDropdown(null)"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        Duplicar Planificación
+                      </button>
+                      <button
+                        (click)="exportarResumen(p); toggleDropdown(null)"
+                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Exportar Resumen
+                      </button>
+                      <hr class="my-1">
+                      <button
+                        (click)="deletePreProducto(p); toggleDropdown(null)"
+                        class="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- MENSAJE CUANDO NO HAY DATOS -->
+          <tr *ngIf="preProductosFiltrados.length === 0">
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+              <div class="flex flex-col items-center justify-center">
+                <svg class="w-12 h-12 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                </svg>
+                <p class="text-lg font-medium">No se encontraron pre-productos</p>
+                <p class="mt-1">{{ filtro ? 'Intenta con otro término de búsqueda' : 'Comienza creando tu primer pre-producto' }}</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR PRE-PRODUCTO -->
+<div *ngIf="isModalRegisterOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closeRegisterModal()"></div>
+    
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <form (ngSubmit)="createPreProducto()" #registerForm="ngForm">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Crear Nuevo Pre-producto</h3>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                  <input type="text" [(ngModel)]="nuevoPreProducto.nombre" name="nombre" required
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                  <textarea [(ngModel)]="nuevoPreProducto.descripcion" name="descripcion" required rows="3"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock Inicial</label>
+                    <input type="number" [(ngModel)]="nuevoPreProducto.stock" name="stock" min="0"
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo *</label>
+                    <input type="text" [(ngModel)]="nuevoPreProducto.tiempo" name="tiempo" required
+                      placeholder="ej: 2 horas"
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="imagen" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+
+                  <!-- ✅ Previsualización -->
+                  <div class="mb-4" *ngIf="previewImageUrl">
+                    <img [src]="previewImageUrl" alt="Vista previa"
+                        class="w-48 h-48 object-cover rounded border border-gray-300 shadow" />
+                  </div>
+
+                  <!-- ✅ Dropzone -->
+                  <ngx-dropzone (change)="onSelect($event)">
+                    <ngx-dropzone-label>Arrastra la imagen aquí</ngx-dropzone-label>
+                    <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+                      <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                    </ngx-dropzone-preview>
+                  </ngx-dropzone>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="submit" [disabled]="!registerForm.form.valid"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Crear Pre-producto
+          </button>
+          <button type="button" (click)="closeRegisterModal()"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACTUALIZAR PRE-PRODUCTO -->
+<div *ngIf="isModalUpdateOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closeUpdateModal()"></div>
+    
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <form (ngSubmit)="updatePreProducto()" #updateForm="ngForm">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Editar Pre-producto</h3>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                  <input type="text" [(ngModel)]="preProductoUpdate.nombre" name="nombre" required
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                  <textarea [(ngModel)]="preProductoUpdate.descripcion" name="descripcion" required rows="3"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                    <input type="number" [(ngModel)]="preProductoUpdate.stock" name="stock" min="0"
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo *</label>
+                    <input type="text" [(ngModel)]="preProductoUpdate.tiempo" name="tiempo" required
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  </div>
+                </div>
+
+                <div>
+                    <label for="imagen" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                    <div class="mb-4">
+                        <img [src]="previewImageUrl ? previewImageUrl : nuevaImagen" alt="Producto"
+                            class="w-48 h-48 object-cover rounded border border-gray-300 shadow"/>
+                    </div>
+                    <ngx-dropzone (change)="onSelect($event)">
+                        <ngx-dropzone-label>Agrega la nueva imagen aqui</ngx-dropzone-label>
+                        <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+                            <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                        </ngx-dropzone-preview>
+                    </ngx-dropzone>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="submit" [disabled]="!updateForm.form.valid"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            Actualizar
+          </button>
+          <button type="button" (click)="closeUpdateModal()"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GESTIÓN DE PLANIFICACIÓN -->
+<div *ngIf="isModalPlanificacionOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closePlanificacionModal()"></div>
+    
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[90vh] overflow-y-auto">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+        <!-- HEADER DEL MODAL -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+              <img *ngIf="preProductoSeleccionado?.url_Image" [src]="preProductoSeleccionado?.url_Image" alt="imagen" 
+                   class="h-12 w-12 object-cover rounded-lg border border-gray-200" />
+              <div *ngIf="!preProductoSeleccionado?.url_Image" 
+                   class="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Planificación de Maquinarias</h3>
+              <p class="text-sm text-gray-500">{{ preProductoSeleccionado?.nombre }}</p>
+            </div>
+          </div>
+          
+          <button (click)="closePlanificacionModal()" 
+                  type="button" 
+                  class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- RESUMEN DE PLANIFICACIÓN -->
+        <div *ngIf="resumenPlanificacion" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <div class="w-4 h-4 rounded-full transition-all duration-300"
+                     [ngClass]="{
+                       'bg-green-500 shadow-green-300 shadow-lg': resumenPlanificacion.planificacionCompleta,
+                       'bg-yellow-500 shadow-yellow-300 shadow-lg': !resumenPlanificacion.planificacionCompleta && resumenPlanificacion.totalMaquinarias > 0,
+                       'bg-gray-400': resumenPlanificacion.totalMaquinarias === 0
+                     }">
+                </div>
+                <span class="text-sm font-medium text-gray-700">
+                  Estado: <span [ngClass]="{
+                    'text-green-700': resumenPlanificacion.planificacionCompleta,
+                    'text-yellow-700': !resumenPlanificacion.planificacionCompleta && resumenPlanificacion.totalMaquinarias > 0,
+                    'text-gray-500': resumenPlanificacion.totalMaquinarias === 0
+                  }">
+                    {{ resumenPlanificacion.planificacionCompleta ? 'Completa' : 
+                       resumenPlanificacion.totalMaquinarias > 0 ? 'Incompleta' : 'Sin planificación' }}
+                  </span>
+                </span>
+              </div>
+              
+              <div class="text-sm text-gray-600">
+                <span class="font-medium">{{ resumenPlanificacion.totalMaquinarias }}</span> maquinarias planificadas
+              </div>
+              
+              <div class="text-sm text-gray-600">
+                Tiempo total: <span class="font-medium">{{ resumenPlanificacion.tiempoTotalEstimado }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMULARIO PARA AGREGAR NUEVA PLANIFICACIÓN -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <h4 class="text-md font-medium text-gray-900 mb-4">Agregar Nueva Planificación</h4>
+          
+          <form (ngSubmit)="agregarPlanificacion()" #planificacionForm="ngForm" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Maquinaria *</label>
+              <select [(ngModel)]="nuevaPlanificacion.maquinariaId" name="maquinariaId" required
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="0">Seleccionar maquinaria</option>
+                <option *ngFor="let maquinaria of maquinarias" [value]="maquinaria.id">
+                  {{ maquinaria.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+              <input type="number" [(ngModel)]="nuevaPlanificacion.cantidad" name="cantidad" required min="1"
+                     class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo Estimado *</label>
+              <input type="text" [(ngModel)]="nuevaPlanificacion.tiempoEstimado" name="tiempoEstimado" required
+                     placeholder="ej: 2 horas"
+                     class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-1 flex items-end">
+              <button type="submit" [disabled]="!planificacionForm.form.valid"
+                      class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Agregar
+              </button>
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+              <textarea [(ngModel)]="nuevaPlanificacion.descripcion" name="descripcion" required rows="2"
+                        placeholder="Describe el proceso o tarea a realizar..."
+                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+            </div>
+          </form>
+        </div>
+
+        <!-- TABLA DE PLANIFICACIONES ACTUALES -->
+        <div class="bg-white">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-md font-medium text-gray-900">Planificaciones Actuales</h4>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {{ planificacionesActuales.length }} planificaciones
+            </span>
+          </div>
+
+          <div *ngIf="cargandoPlanificaciones" class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-sm text-gray-500">Cargando planificaciones...</span>
+          </div>
+
+          <div *ngIf="!cargandoPlanificaciones && planificacionesActuales.length === 0" 
+               class="text-center py-8 text-gray-500">
+            <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            <p class="text-lg font-medium">No hay planificaciones</p>
+            <p class="text-sm">Agrega la primera planificación de maquinaria</p>
+          </div>
+
+          <div *ngIf="!cargandoPlanificaciones && planificacionesActuales.length > 0" 
+               class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Maquinaria
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cantidad
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tiempo
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Descripción
+                  </th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let planificacion of planificacionesActuales" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">
+                          {{ obtenerNombreMaquinaria(planificacion.maquinaria.id) }}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                          ID: {{ planificacion.maquinaria.id }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {{ planificacion.cantidad }} unidades
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ planificacion.tiempoEstimado }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    <div class="max-w-xs truncate" [title]="planificacion.descripcion">
+                      {{ planificacion.descripcion }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button (click)="eliminarPlanificacion(planificacion.id)"
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FOOTER DEL MODAL -->
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" (click)="closePlanificacionModal()"
+                class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,639 @@
+<header class="w-full fixed top-0 left-0 bg-white shadow-md z-50">
+  <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+    <!-- Logo -->
+    <div
+      (click)="scrollTo('inicio')"
+      class="text-2xl font-bold text-blue-600 cursor-pointer"
+    >
+      MRP Solutions
+    </div>
+
+    <!-- Navigation Desktop -->
+    <nav class="hidden md:flex gap-8 items-center text-gray-600 text-lg">
+      <a
+        (click)="scrollTo('inicio')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >Inicio</a
+      >
+      <a
+        (click)="scrollTo('caracteristicas')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >Características</a
+      >
+      <a
+        (click)="scrollTo('precios')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >Precios</a
+      >
+      <a
+        (click)="scrollTo('testimonials')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >Testimonios</a
+      >
+      <a
+        (click)="scrollTo('faqs')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >FAQs</a
+      >
+      <a
+        (click)="scrollTo('contacto')"
+        class="hover:text-blue-600 transition cursor-pointer"
+        >Contacto</a
+      >
+    </nav>
+
+    <!-- CTA Desktop -->
+    <div class="hidden md:block">
+      <a
+        (click)="navigateTo('login')"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-lg transition cursor-pointer"
+      >
+        Iniciar sesión
+      </a>
+    </div>
+
+    <!-- Botón hamburguesa (mobile) -->
+    <div class="md:hidden">
+      <button
+        (click)="toggleMenu()"
+        class="text-gray-600 focus:outline-none text-3xl transition-transform cursor-pointer"
+      >
+        {{ isMenuOpen ? "✖" : "☰" }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú móvil -->
+  <div
+    class="flex flex-col items-center bg-white md:hidden overflow-hidden transition-all duration-500 ease-in-out"
+    [class.max-h-0]="!isMenuOpen"
+    [class.max-h-[500px]]="isMenuOpen"
+  >
+    <a
+      (click)="scrollTo('inicio')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Inicio</a
+    >
+    <a
+      (click)="scrollTo('caracteristicas')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Características</a
+    >
+    <a
+      (click)="scrollTo('precios')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Precios</a
+    >
+    <a
+      (click)="scrollTo('testimonials')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Precios</a
+    >
+    <a
+      (click)="scrollTo('faqs')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Precios</a
+    >
+    <a
+      (click)="scrollTo('contacto')"
+      class="py-3 text-gray-700 text-lg hover:text-blue-600 transition cursor-pointer"
+      >Contacto</a
+    >
+    <a
+      (click)="navigateTo('registro')"
+      class="mt-4 mb-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-lg transition"
+    >
+      Comenzar ahora
+    </a>
+  </div>
+</header>
+
+<section
+  id="inicio"
+  class="w-full min-h-screen flex items-center justify-center bg-gray-50 px-6 pt-24"
+>
+  <div
+    class="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+  >
+    <!-- Texto -->
+    <div class="text-center md:text-left">
+      <h1
+        class="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight"
+      >
+        Gestiona tu producción
+        <span class="text-blue-600">de forma inteligente</span>
+      </h1>
+      <p class="text-lg md:text-xl text-gray-600 mb-8">
+        Optimiza recursos, automatiza procesos y lleva tu empresa al siguiente
+        nivel con nuestro sistema MRP.
+      </p>
+      <a
+        (click)="navigateTo('registro')"
+        class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl text-lg transition transform hover:scale-105"
+      >
+        Comenzar ahora
+      </a>
+    </div>
+
+    <!-- Imagen -->
+    <div class="flex justify-center md:justify-end">
+      <img
+        src="https://res.cloudinary.com/day1tsmdn/image/upload/v1746477327/MRP-Solutions-logo_fzwtdc.png"
+        alt="heroImg"
+        class="w-full h-auto rounded-xl shadow-xl max-w-md md:max-w-full"
+      />
+    </div>
+  </div>
+</section>
+
+<section id="caracteristicas" class="w-full bg-white py-24 px-6">
+  <div class="max-w-7xl mx-auto text-center mb-16">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+      Características destacadas
+    </h2>
+    <p class="text-lg md:text-xl text-gray-600">
+      Nuestro sistema MRP está diseñado para optimizar tu producción de manera
+      eficiente y sencilla.
+    </p>
+  </div>
+
+  <div
+    class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12"
+  >
+    <!-- Característica 1 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16M8 12h8"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">
+        Gestión de Inventarios
+      </h3>
+      <p class="text-gray-600">
+        Lleva un control detallado y actualizado de tus inventarios para evitar
+        pérdidas y optimizar recursos.
+      </p>
+    </div>
+
+    <!-- Característica 2 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 3v12c0 1.104.896 2 2 2h10c1.104 0 2-.896 2-2V3M5 3h2m12 0h2M5 6h14m-7 4h7m-7 4h7"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">
+        Optimización de Producción
+      </h3>
+      <p class="text-gray-600">
+        Automatiza los procesos de producción, ajustando las operaciones a las
+        necesidades de tu empresa en tiempo real.
+      </p>
+    </div>
+
+    <!-- Característica 3 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16M8 12h8"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">
+        Reportes y Análisis
+      </h3>
+      <p class="text-gray-600">
+        Genera reportes detallados y análisis de tus operaciones para tomar
+        decisiones informadas y estratégicas.
+      </p>
+    </div>
+
+    <!-- Característica 4 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19l-7-7 7-7m10 14l7-7-7-7"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">
+        Integración Sencilla
+      </h3>
+      <p class="text-gray-600">
+        Nuestro sistema se integra fácilmente con tus herramientas existentes
+        para evitar procesos complejos y dispendiosos.
+      </p>
+    </div>
+
+    <!-- Característica 5 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 3l4 4m0 0l4-4M3 13l4-4m0 0L3 9m10 10l4-4m0 0L13 17"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">Soporte 24/7</h3>
+      <p class="text-gray-600">
+        Nuestro equipo de soporte está disponible 24/7 para ayudarte a resolver
+        cualquier duda o inconveniente.
+      </p>
+    </div>
+    <!-- Característica 6 -->
+    <div
+      class="flex flex-col items-center bg-gray-50 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+    >
+      <div class="mb-6">
+        <svg
+          class="w-16 h-16 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 3l4 4m0 0l4-4M3 13l4-4m0 0L3 9m10 10l4-4m0 0L13 17"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">Otro</h3>
+      <p class="text-gray-600">
+        Nuestro software tiene más funcionalidades, compre ya.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="py-16 bg-gray-50">
+  <div class="container mx-auto">
+    <h2 class="text-3xl font-bold mb-10 text-center">Testimonios</h2>
+    <div id="testimonials-container" class="overflow-hidden relative">
+      <div id="testimonials-track" class="flex gap-8">
+        <div
+          *ngFor="let testimonial of testimonials"
+          class="testimonial-card bg-white shadow-md p-6 rounded-lg min-w-[300px] hover:scale-105 transition-transform"
+        >
+          <p class="text-gray-700 mb-4">"{{ testimonial.message }}"</p>
+          <div class="flex items-center mb-2">
+            <ng-container *ngFor="let star of getStars(testimonial.rating)">
+              <span class="text-yellow-400 text-xl">★</span>
+            </ng-container>
+          </div>
+          <p class="text-sm font-semibold text-gray-600">
+            {{ testimonial.user }}
+          </p>
+        </div>
+        <!-- DUPLICADO para el loop -->
+        <div
+          *ngFor="let testimonial of testimonials"
+          class="testimonial-card bg-white shadow-md p-6 rounded-lg min-w-[300px] hover:scale-105 transition-transform"
+        >
+          <p class="text-gray-700 mb-4">"{{ testimonial.message }}"</p>
+          <div class="flex items-center mb-2">
+            <ng-container *ngFor="let star of getStars(testimonial.rating)">
+              <span class="text-yellow-400 text-xl">★</span>
+            </ng-container>
+          </div>
+          <p class="text-sm font-semibold text-gray-600">
+            {{ testimonial.user }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section
+  id="precios"
+  class="w-full bg-gradient-to-r from-blue-100 to-blue-50 py-20 px-6"
+>
+  <div class="max-w-7xl mx-auto text-center mb-12">
+    <h2 class="text-4xl font-bold text-gray-800 mb-6">Nuestros Planes</h2>
+    <p class="text-lg text-gray-600">
+      Elige el plan que mejor se adapte a tus necesidades y empieza a gestionar
+      tu producción de manera eficiente.
+    </p>
+  </div>
+
+  <!-- Contenedor de los planes -->
+  <div class="flex flex-wrap justify-center gap-12">
+    <!-- Plan Demo -->
+    <div class="w-full md:w-1/2 lg:w-1/3">
+      <div
+        class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+      >
+        <!-- Icono -->
+        <div class="flex justify-center mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-16 w-16 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 3v18l15-9-15-9z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Plan Demo</h3>
+        <p class="text-lg text-gray-600 mb-4">
+          Ideal para comenzar. Con funciones básicas para probar el sistema.
+        </p>
+        <div class="mb-6">
+          <span class="text-5xl font-bold text-gray-800">Bs.- 0</span>
+          <span class="text-lg text-gray-600">/mes</span>
+        </div>
+        <ul class="space-y-4 text-left text-gray-600">
+          <li>✔ Gestión básica de inventarios</li>
+          <li>✔ Informes limitados</li>
+          <li>✔ Soporte básico</li>
+        </ul>
+        <a
+          (click)="navigateTo('registro')"
+          class="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg transition transform hover:scale-105"
+        >
+          Comenzar ahora
+        </a>
+      </div>
+    </div>
+
+    <!-- Plan Premium (resaltado) -->
+    <div class="w-full md:w-1/2 lg:w-1/3">
+      <div
+        class="bg-blue-600 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-4 border-blue-800 relative"
+      >
+        <!-- Icono -->
+        <div class="flex justify-center mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-16 w-16 text-yellow-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 2l9 4.5-3 9-9 4.5-9-4.5 3-9z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold mb-4">Plan Premium</h3>
+        <p class="text-lg mb-4">
+          Todo lo que necesitas para gestionar tu producción de manera avanzada
+          con soporte prioritario.
+        </p>
+        <div class="mb-6">
+          <span class="text-5xl font-bold">Bs.- 150</span>
+          <span class="text-lg">/mes</span>
+        </div>
+        <ul class="space-y-4 text-left">
+          <li>✔ Gestión avanzada de inventarios</li>
+          <li>✔ Informes completos</li>
+          <li>✔ Soporte prioritario</li>
+          <li>✔ Integración con otros sistemas</li>
+        </ul>
+        <a
+          (click)="navigateTo('registro')"
+          class="inline-block mt-6 bg-blue-800 hover:bg-blue-900 text-white px-6 py-3 rounded-xl text-lg transition transform hover:scale-105"
+        >
+          Comenzar ahora
+        </a>
+        <!-- Indicador de plan premium -->
+        <div
+          class="absolute top-0 right-0 p-4 text-xs font-semibold bg-yellow-400 text-gray-800 rounded-bl-lg"
+        >
+          Más Popular
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faqs" class="w-full bg-gray-50 py-20 px-6">
+  <div class="max-w-4xl mx-auto text-center mb-12">
+    <h2 class="text-4xl font-bold text-gray-800 mb-4">Preguntas Frecuentes</h2>
+    <p class="text-gray-600 text-lg">
+      Resolvemos tus dudas más comunes sobre MRP Solutions.
+    </p>
+  </div>
+
+  <div class="max-w-3xl mx-auto space-y-4">
+    <div
+      *ngFor="let faq of faqs; let i = index"
+      class="border border-gray-300 rounded-xl overflow-hidden shadow hover:shadow-lg transition-all"
+    >
+      <button
+        (click)="toggleFaq(i)"
+        class="w-full flex justify-between items-center p-6 bg-white text-left"
+      >
+        <span class="text-lg font-medium text-gray-800">{{
+          faq.question
+        }}</span>
+        <span
+          class="text-2xl text-blue-600 transition-transform"
+          [class.rotate-45]="faq.open"
+          >+</span
+        >
+      </button>
+      <div
+        class="px-6 pb-6 text-gray-600 text-base transition-all duration-500 ease-in-out overflow-hidden"
+        [style.maxHeight]="faq.open ? '500px' : '0'"
+      >
+        <p>{{ faq.answer }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contacto" class="w-full bg-white py-20 px-6">
+  <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+    <!-- Texto de Contacto -->
+    <div>
+      <h2 class="text-4xl font-bold text-gray-800 mb-6">
+        ¿Tienes preguntas? ¡Contáctanos!
+      </h2>
+      <p class="text-gray-600 text-lg mb-6">
+        Nuestro equipo está listo para ayudarte en cada paso. Completa el
+        formulario y te responderemos en breve.
+      </p>
+      <ul class="space-y-4">
+        <li class="flex items-center">
+          <span class="text-blue-600 text-2xl mr-4">📞</span>
+          <span class="text-gray-700">+591 776 54 321</span>
+        </li>
+        <li class="flex items-center">
+          <span class="text-blue-600 text-2xl mr-4">✉️</span>
+          <!-- <span class="text-gray-700">contacto@pro.com</span> -->
+          <span class="text-gray-700">contacto&#64;mrpsolutions.com</span>
+        </li>
+        <li class="flex items-center">
+          <span class="text-blue-600 text-2xl mr-4">📍</span>
+          <span class="text-gray-700">Santa Cruz, Bolivia</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Formulario de Contacto -->
+    <form
+      (submit)="enviarFormulario()"
+      class="bg-gray-50 rounded-2xl shadow-lg p-8 space-y-6"
+    >
+      <div class="flex flex-col">
+        <label class="text-gray-700 mb-2">Nombre</label>
+        <input
+          type="text"
+          [(ngModel)]="contacto.nombre"
+          name="nombre"
+          class="p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-300"
+          required
+        />
+      </div>
+      <div class="flex flex-col">
+        <label class="text-gray-700 mb-2">Correo electrónico</label>
+        <input
+          type="email"
+          [(ngModel)]="contacto.email"
+          name="email"
+          class="p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-300"
+          required
+        />
+      </div>
+      <div class="flex flex-col">
+        <label class="text-gray-700 mb-2">Mensaje</label>
+        <textarea
+          [(ngModel)]="contacto.mensaje"
+          name="mensaje"
+          rows="4"
+          class="p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-300"
+          required
+        ></textarea>
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-transform transform hover:scale-105"
+      >
+        Enviar Mensaje
+      </button>
+    </form>
+  </div>
+</section>
+
+<footer
+  #footer
+  [ngClass]="
+    footerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+  "
+  class="bg-gray-100 py-8 mt-20 transition-all duration-1000 ease-out"
+>
+  <div
+    class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0"
+  >
+    <div class="text-gray-600 text-center md:text-left">
+      © 2025 MRP Solutions. Todos los derechos reservados.
+    </div>
+    <div class="flex space-x-6">
+      <a
+        (click)="scrollTo('inicio')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >Inicio</a
+      >
+      <a
+        (click)="scrollTo('caracteristicas')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >Características</a
+      >
+      <a
+        (click)="scrollTo('precios')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >Precios</a
+      >
+      <a
+        (click)="scrollTo('testimonials')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >Testimonios</a
+      >
+      <a
+        (click)="scrollTo('faqs')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >FAQs</a
+      >
+      <a
+        (click)="scrollTo('contacto')"
+        class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+        >Contacto</a
+      >
+    </div>
+  </div>
+</footer>

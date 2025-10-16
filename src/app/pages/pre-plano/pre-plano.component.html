@@ -1,0 +1,207 @@
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Gestión de Pre-Planos</h1>
+    <p class="text-gray-600">Relación entre materiales y pre-productos</p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="relative flex-grow max-w-md">
+        <input type="text" [(ngModel)]="filtro" (input)="buscarPrePlanos()" placeholder="Buscar pre-plano..."
+          class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" />
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+          </svg>
+        </div>
+      </div>
+
+      <button (click)="openRegisterModal()" type="button"
+        class="flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Nuevo Pre-Plano
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th class="px-6 py-3">ID</th>
+            <th class="px-6 py-3">Pre-producto</th>
+            <th class="px-6 py-3">Material</th>
+            <th class="px-6 py-3">Cantidad</th>
+            <th class="px-6 py-3">Descripción</th>
+            <th class="px-6 py-3">Tiempo Estimado</th>
+            <th class="px-6 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of prePlanosFiltrados" class="border-b hover:bg-gray-50">
+            <td class="px-6 py-4 font-medium text-gray-900">{{ p.id }}</td>
+            <td class="px-6 py-4">{{ p.preProducto?.nombre }}</td>
+            <td class="px-6 py-4">{{ p.material?.nombre }}</td>
+            <td class="px-6 py-4">{{ p.cantidad }}</td>
+            <td class="px-6 py-4">{{ p.descripcion }}</td>
+            <td class="px-6 py-4">{{ p.tiempo_estimado }}</td>
+            <td class="px-6 py-4">
+              <div class="flex space-x-2">
+                <button
+                  (click)="openUpdateModal(p)"
+                  class="text-blue-600 hover:text-blue-900"
+                  title="Editar"
+                >
+                  <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  (click)="deletePrePlano(p)"
+                  class="text-red-600 hover:text-red-900"
+                  title="Eliminar"
+                >
+                  <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="prePlanosFiltrados && prePlanosFiltrados.length === 0">
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">No se encontraron pre-planos.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- Modal para registrar PrePlano -->
+<div *ngIf="isModalRegisterOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
+    <div class="flex items-center justify-between px-6 py-4 bg-blue-600">
+      <h3 class="text-lg font-medium text-white">Registrar nuevo Pre-Plano</h3>
+      <button (click)="closeRegisterModal()" class="text-white hover:text-gray-200">
+        ✖️
+      </button>
+    </div>
+    <form (ngSubmit)="createPrePlano()" class="p-6">
+      <div class="grid grid-cols-1 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Cantidad *</label>
+          <input type="number" [(ngModel)]="nuevoPrePlano.cantidad" name="cantidad" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Descripción *</label>
+          <input type="text" [(ngModel)]="nuevoPrePlano.descripcion" name="descripcion" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Tiempo estimado *</label>
+          <input type="text" [(ngModel)]="nuevoPrePlano.tiempo_estimado" name="tiempo_estimado" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Material *</label>
+          <select [(ngModel)]="nuevoPrePlano.material" name="material" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+            <option value="" disabled selected>Seleccionar material</option>
+            <option *ngFor="let mat of materiales" [ngValue]="mat">{{ mat.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Pre-producto *</label>
+          <select [(ngModel)]="nuevoPrePlano.preProducto" name="preProducto" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+            <option value="" disabled selected>Seleccionar pre-producto</option>
+            <option *ngFor="let pre of preProductos" [ngValue]="pre">{{ pre.nombre }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end space-x-3">
+        <button type="button" (click)="closeRegisterModal()"
+          class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancelar</button>
+        <button type="submit"
+          class="px-4 py-2 border border-transparent rounded-md text-sm text-white bg-blue-600 hover:bg-blue-700">Registrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para actualizar PrePlano -->
+<div *ngIf="isModalUpdateOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
+    <div class="flex items-center justify-between px-6 py-4 bg-blue-600">
+      <h3 class="text-lg font-medium text-white">Actualizar Pre-Plano</h3>
+      <button (click)="closeUpdateModal()" class="text-white hover:text-gray-200">
+        ✖️
+      </button>
+    </div>
+    <form (ngSubmit)="updatePrePlano()" class="p-6">
+      <div class="grid grid-cols-1 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Cantidad *</label>
+          <input type="number" [(ngModel)]="prePlanoUpdate.cantidad" name="cantidadUpdate" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Descripción *</label>
+          <input type="text" [(ngModel)]="prePlanoUpdate.descripcion" name="descripcionUpdate" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Tiempo estimado *</label>
+          <input type="text" [(ngModel)]="prePlanoUpdate.tiempo_estimado" name="tiempoEstimadoUpdate" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Material *</label>
+          <select [(ngModel)]="prePlanoUpdate.material" name="materialUpdate" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+            <option value="" disabled>Seleccionar material</option>
+            <option *ngFor="let mat of materiales" [ngValue]="mat">{{ mat.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Pre-producto *</label>
+          <select [(ngModel)]="prePlanoUpdate.preProducto" name="preProductoUpdate" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+            <option value="" disabled>Seleccionar pre-producto</option>
+            <option *ngFor="let pre of preProductos" [ngValue]="pre">{{ pre.nombre }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end space-x-3">
+        <button type="button" (click)="closeUpdateModal()"
+          class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancelar</button>
+        <button type="submit"
+          class="px-4 py-2 border border-transparent rounded-md text-sm text-white bg-blue-600 hover:bg-blue-700">Actualizar</button>
+      </div>
+    </form>
+  </div>
+</div>

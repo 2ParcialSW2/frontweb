@@ -1,0 +1,45 @@
+# Dependencias
+node_modules
+npm-debug.log
+
+# Sistema de control de versiones
+.git
+.gitignore
+
+# Archivos de entorno
+.env
+.env.*
+
+# Archivos de compilación/construcción
+/dist
+/tmp
+/out-tsc
+/.angular/cache
+
+# Archivos del IDE y editores
+/.idea
+/.vscode
+/.history
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de prueba y cobertura
+/coverage
+/.nyc_output
+
+# Otros
+README.md
+LICENSE
+*.md
+.editorconfig
+.prettierrc
+.eslintrc
+docker-compose.yml
+Dockerfile
+.dockerignore 

@@ -1,0 +1,297 @@
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Reportes</h1>
+    <p class="text-gray-600">Genera informes y reportes sobre compras y productos</p>
+  </div>
+
+  <!-- Pestañas de navegación -->
+  <div class="bg-white rounded-lg shadow-md p-1 mb-6 flex space-x-1">
+    <button 
+      (click)="cambiarReporte('compras')" 
+      class="flex-1 py-3 px-4 text-center transition-colors" 
+      [ngClass]="reporteActivo === 'compras' ? 'bg-blue-600 text-white rounded-lg' : 'text-gray-700 hover:bg-gray-100 rounded-lg'"
+    >
+      Reporte de Compras
+    </button>
+    <button 
+      (click)="cambiarReporte('productos')" 
+      class="flex-1 py-3 px-4 text-center transition-colors" 
+      [ngClass]="reporteActivo === 'productos' ? 'bg-blue-600 text-white rounded-lg' : 'text-gray-700 hover:bg-gray-100 rounded-lg'"
+    >
+      Reporte de Productos
+    </button>
+  </div>
+
+  <!-- Reporte de Compras -->
+  <div *ngIf="reporteActivo === 'compras'" class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-6">Reporte de Compras</h2>
+    
+    <!-- Filtros para reporte de compras -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label for="fechaDesdeCompras" class="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
+        <input 
+          type="date" 
+          id="fechaDesdeCompras" 
+          [(ngModel)]="fechaDesdeCompras"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        >
+      </div>
+      
+      <div>
+        <label for="fechaHastaCompras" class="block text-sm font-medium text-gray-700 mb-1">Fecha Hasta</label>
+        <input 
+          type="date" 
+          id="fechaHastaCompras" 
+          [(ngModel)]="fechaHastaCompras"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        >
+      </div>
+      
+      <div>
+        <label for="proveedorSeleccionado" class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+        <select 
+          id="proveedorSeleccionado" 
+          [(ngModel)]="proveedorSeleccionadoId"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option [value]="0">Todos los proveedores</option>
+          <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">{{ proveedor.nombre }}</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="estadoSeleccionado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+        <select 
+          id="estadoSeleccionado" 
+          [(ngModel)]="estadoSeleccionado"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosCompra" [value]="estado">{{ estado }}</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="flex space-x-2 mb-6">
+      <button 
+        (click)="filtrarCompras()" 
+        class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"
+        [disabled]="cargandoCompras"
+      >
+        <span *ngIf="!cargandoCompras">Consultar</span>
+        <span *ngIf="cargandoCompras" class="flex items-center">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Cargando...
+        </span>
+      </button>
+      
+      <button 
+        (click)="descargarReporteComprasPDF()" 
+        class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 focus:ring-4 focus:ring-gray-300"
+        [disabled]="compras.length === 0 || cargandoCompras"
+      >
+        Descargar PDF
+      </button>
+      
+      <button 
+        (click)="descargarReporteComprasExcel()" 
+        class="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300"
+        [disabled]="compras.length === 0 || cargandoCompras"
+      >
+        Descargar Excel
+      </button>
+      
+      <button 
+        (click)="descargarReporteComprasCSV()" 
+        class="px-4 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 focus:ring-4 focus:ring-orange-300"
+        [disabled]="compras.length === 0 || cargandoCompras"
+      >
+        Descargar CSV
+      </button>
+    </div>
+    
+    <!-- Tabla de resultados -->
+    <div class="overflow-x-auto">
+      <div *ngIf="cargandoCompras" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Cargando datos...</span>
+      </div>
+      
+      <table *ngIf="!cargandoCompras" class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th class="px-4 py-3">ID</th>
+            <th class="px-4 py-3">Fecha</th>
+            <th class="px-4 py-3">Proveedor</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let compra of compras" class="border-b hover:bg-gray-50">
+            <td class="px-4 py-3">{{ compra.id }}</td>
+            <td class="px-4 py-3">{{ compra.fecha | date:'dd/MM/yyyy' }}</td>
+            <td class="px-4 py-3">
+              <ng-container *ngIf="compra.proveedor && compra.proveedor.nombre; else mostrarNombreProveedor">
+                {{ compra.proveedor.nombre }}
+              </ng-container>
+              <ng-template #mostrarNombreProveedor>
+                {{ obtenerNombreProveedor(compra) }}
+              </ng-template>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-800': compra.estado === 'PENDIENTE',
+                  'bg-green-100 text-green-800': compra.estado === 'APROBADO',
+                  'bg-red-100 text-red-800': compra.estado === 'RECHAZADO',
+                  'bg-blue-100 text-blue-800': compra.estado === 'COMPLETADO'
+                }">
+                {{ compra.estado }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right font-medium">BS {{ compra.importe_total | number:'1.2-2' }}</td>
+          </tr>
+          
+          <!-- Estado vacío -->
+          <tr *ngIf="compras.length === 0">
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+              No se encontraron resultados con los filtros seleccionados.
+            </td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="compras.length > 0">
+          <tr class="font-semibold text-gray-900 border-t">
+            <td colspan="4" class="px-4 py-3 text-right">Total:</td>
+            <td class="px-4 py-3 text-right">BS {{ calcularTotalCompras() | number:'1.2-2' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Reporte de Productos -->
+  <div *ngIf="reporteActivo === 'productos'" class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-6">Reporte de Productos</h2>
+    
+    <!-- Filtros para reporte de productos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div>
+        <label for="busquedaProducto" class="block text-sm font-medium text-gray-700 mb-1">Buscar Producto</label>
+        <input 
+          type="text" 
+          id="busquedaProducto" 
+          [(ngModel)]="busquedaProducto"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          placeholder="ID o nombre del producto"
+        >
+      </div>
+      <div>
+        <label for="stockMinimo" class="block text-sm font-medium text-gray-700 mb-1">Stock Mínimo</label>
+        <input 
+          type="number" 
+          id="stockMinimo" 
+          [(ngModel)]="stockMinimo"
+          class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Mostrar productos con stock menor o igual a este valor"
+          min="0"
+        >
+      </div>
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="flex space-x-2 mb-6">
+      <button 
+        (click)="filtrarProductos()" 
+        class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"
+        [disabled]="cargandoMateriales"
+      >
+        <span *ngIf="!cargandoMateriales">Consultar</span>
+        <span *ngIf="cargandoMateriales" class="flex items-center">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Cargando...
+        </span>
+      </button>
+      
+      <button 
+        (click)="descargarReporteProductosPDF()" 
+        class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 focus:ring-4 focus:ring-gray-300"
+        [disabled]="materiales.length === 0 || cargandoMateriales"
+      >
+        Descargar PDF
+      </button>
+      
+      <button 
+        (click)="descargarReporteProductosExcel()" 
+        class="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300"
+        [disabled]="materiales.length === 0 || cargandoMateriales"
+      >
+        Descargar Excel
+      </button>
+      
+      <button 
+        (click)="descargarReporteProductosCSV()" 
+        class="px-4 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 focus:ring-4 focus:ring-orange-300"
+        [disabled]="materiales.length === 0 || cargandoMateriales"
+      >
+        Descargar CSV
+      </button>
+    </div>
+    
+    <!-- Tabla de resultados -->
+    <div class="overflow-x-auto">
+      <div *ngIf="cargandoMateriales" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Cargando datos...</span>
+      </div>
+      
+      <table *ngIf="!cargandoMateriales" class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th class="px-4 py-3">ID</th>
+            <th class="px-4 py-3">Nombre</th>
+            <th class="px-4 py-3">Descripción</th>
+            <th class="px-4 py-3 text-center">Stock Actual</th>
+            <th class="px-4 py-3 text-center">Stock Mínimo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let material of materiales" class="border-b hover:bg-gray-50">
+            <td class="px-4 py-3">{{ material.id || 'N/A' }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900">{{ material.nombre || 'Sin nombre' }}</td>
+            <td class="px-4 py-3">{{ material.descripcion || 'Sin descripción' }}</td>
+            <td class="px-4 py-3 text-center" 
+                [ngClass]="{
+                  'text-red-600 font-medium': (getNumericValue(material.stockActual) <= getNumericValue(material.stockMinimo)) && getNumericValue(material.stockMinimo) > 0,
+                  'text-yellow-600 font-medium': getNumericValue(material.stockActual) == 0
+                }">
+              {{ getNumericValue(material.stockActual) | number:'1.0-0' }}
+            </td>
+            <td class="px-4 py-3 text-center">{{ getNumericValue(material.stockMinimo) | number:'1.0-0' }}</td>
+          </tr>
+          
+          <!-- Estado vacío -->
+          <tr *ngIf="materiales.length === 0">
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+              No se encontraron productos con los filtros seleccionados.
+            </td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="materiales.length > 0">
+          <tr class="font-semibold text-gray-900 border-t">
+            <td colspan="3" class="px-4 py-3">Total de productos: {{ materiales.length }}</td>
+            <td colspan="2" class="px-4 py-3 text-right">Stock disponible total: {{ calcularTotalStockDisponible() | number:'1.0-0' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

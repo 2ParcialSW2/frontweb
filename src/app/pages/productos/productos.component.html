@@ -1,0 +1,377 @@
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">
+            Gestión de Productos
+        </h1>
+        <p class="text-gray-600">Administra los Productos del sistema</p>
+    </div>
+
+    <!-- Panel de filtros y acciones -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <!-- Buscador -->
+            <div class="relative flex-grow max-w-md">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </div>
+                <input type="text" [(ngModel)]="filtro" (input)="filtrarProductos()" placeholder="Buscar producto..."
+                    class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+
+            <!-- Botón para registrar producto -->
+            <button (click)="abrirModalNuevo()" type="button"
+                class="flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 transition duration-150 ease-in-out">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nuevo Producto
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">ID</th>
+                        <th scope="col" class="px-6 py-3">Nombre</th>
+                        <th scope="col" class="px-6 py-3">Descripcion</th>
+                        <th scope="col" class="px-6 py-3">Stock</th>
+                        <th scope="col" class="px-6 py-3">Stock Mínimo</th>
+                        <th scope="col" class="px-6 py-3">Precio Unitario</th>
+                        <th scope="col" class="px-6 py-3">Tiempo</th>
+                        <th scope="col" class="px-6 py-3">Imagen</th>
+                        <!-- <th scope="col" class="px-6 py-3">Materiales</th> -->
+                        <th scope="col" class="px-6 py-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let producto of productosFiltrados" class="border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            {{ producto.id }}
+                        </td>
+                        <td class="px-6 py-4">{{ producto.nombre }}</td>
+                        <td class="px-6 py-4">{{ producto.descripcion }}</td>
+                        <td class="px-6 py-4">
+                            <div (click)="abrirModalActualizar(producto)" class="cursor-pointer">{{ producto.stock }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">{{ producto.stock_minimo }}</td>
+                        <td class="px-6 py-4">{{ producto.precioUnitario | currency:'BOB ':'symbol':'1.2-2' }}</td>
+                        <td class="px-6 py-4">{{ producto.tiempo }}</td>
+                        <td class="px-6 py-4">
+                            <div (click)="abrirModalActualizar(producto)" class="cursor-pointer">
+                                <img *ngIf="producto.imagen" [src]="producto.imagen" alt="Imagen"
+                                    class="w-12 h-12 rounded" />
+                                <span *ngIf="!producto.imagen" class="text-gray-400 italic">Sin imagen</span>
+                            </div>
+                        </td>
+                        <!-- <td class="px-6 py-4">
+                            <ul *ngIf="producto.materiales && producto.materiales.length > 0"
+                                class="list-disc list-inside">
+                                <li *ngFor="let mat of producto.materiales">
+                                    {{ mat.material?.nombre || 'Sin nombre' }} ({{ mat.cantidad }})
+                                </li>
+                            </ul>
+                            <span *ngIf="!producto.materiales || producto.materiales.length === 0"
+                                class="text-gray-400 italic">
+                                No asignado
+                            </span>
+                        </td> -->
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-2">
+                                <button (click)="abrirModalEditar(producto)" class="text-blue-600 hover:text-blue-900"
+                                    title="Editar producto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button (click)="eliminarProducto(producto)" class="text-red-600 hover:text-red-900"
+                                    title="Eliminar producto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Estado vacío -->
+                    <tr *ngIf="productosFiltrados.length === 0">
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-semibold text-gray-900">
+                                No se encontraron productos
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Comienza por crear un nuevo producto.
+                            </p>
+                            <div class="mt-6">
+                                <button (click)="abrirModalNuevo()" type="button"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Nuevo Producto
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para registrar -->
+<div *ngIf="isModalNuevoOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 bg-blue-600">
+            <h3 class="text-lg font-medium text-white">
+                Registrar un nuevo producto
+            </h3>
+            <button (click)="cerrarModalNuevo()" class="text-white hover:text-gray-200">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form (submit)="crearProducto()" class="p-6">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="producto" class="block text-sm font-medium text-gray-700">Nombre *</label>
+                    <input type="text" id="producto" [(ngModel)]="productoNuevo.nombre" name="nombre" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción *</label>
+                    <input type="text" id="descripcion" [(ngModel)]="productoNuevo.descripcion" name="descripcion"
+                        required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="precioUnitario" class="block text-sm font-medium text-gray-700">Precio Unitario
+                        *</label>
+                    <input type="number" step="0.01" id="precioUnitario" [(ngModel)]="productoNuevo.precioUnitario"
+                        name="precioUnitario" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="stock" class="block text-sm font-medium text-gray-700">Stock *</label>
+                    <input type="number" id="stock" [(ngModel)]="productoNuevo.stock" name="stock" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="stock_minimo" class="block text-sm font-medium text-gray-700">Stock Mínimo *</label>
+                    <input type="number" id="stock_minimo" [(ngModel)]="productoNuevo.stock_minimo" name="stock_minimo"
+                        required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="imagen" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                    <ngx-dropzone (change)="onSelect($event)">
+                        <ngx-dropzone-label>Arrastra la imagen aqui</ngx-dropzone-label>
+                        <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+                            <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                        </ngx-dropzone-preview>
+                    </ngx-dropzone>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo *</label>
+                    <input type="text" id="tiempo" [(ngModel)]="productoNuevo.tiempo" name="tiempo" required
+                        placeholder="Ej: 30 días, 2 semanas..."
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" (click)="cerrarModalNuevo()"
+                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Registrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para editar -->
+<div *ngIf="isModalEditarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 bg-yellow-500">
+            <h3 class="text-lg font-medium text-white">
+                Editar producto
+            </h3>
+            <button (click)="cerrarModalEditar()" class="text-white hover:text-gray-200">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form (submit)="actualizarProducto()" class="p-6">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="edit-nombre" class="block text-sm font-medium text-gray-700">Nombre *</label>
+                    <input type="text" id="edit-nombre" [(ngModel)]="productoEdit.nombre" name="editNombre" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="edit-descripcion" class="block text-sm font-medium text-gray-700">Descripción *</label>
+                    <input type="text" id="edit-descripcion" [(ngModel)]="productoEdit.descripcion"
+                        name="editDescripcion" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="edit-precio" class="block text-sm font-medium text-gray-700">Precio Unitario *</label>
+                    <input type="number" id="edit-precio" [(ngModel)]="productoEdit.precioUnitario"
+                        name="editPrecioUnitario" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="edit-stock" class="block text-sm font-medium text-gray-700">Stock *</label>
+                    <input type="number" id="edit-stock" [(ngModel)]="productoEdit.stock" name="editStock" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="edit-stock-min" class="block text-sm font-medium text-gray-700">Stock Mínimo *</label>
+                    <input type="number" id="edit-stock-min" [(ngModel)]="productoEdit.stock_minimo"
+                        name="editStockMinimo" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+
+                <div>
+                    <label for="imagen" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                    <div class="mb-4">
+                        <img [src]="previewImageUrl ? previewImageUrl : nuevaImagen" alt="Producto"
+                            class="max-w-full max-h-60 rounded mt-2 mx-auto" />
+                    </div>
+                    <ngx-dropzone (change)="onSelect($event)">
+                        <ngx-dropzone-label>Agrega la nueva imagen aqui</ngx-dropzone-label>
+                        <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+                            <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                        </ngx-dropzone-preview>
+                    </ngx-dropzone>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="edit-tiempo" class="block text-sm font-medium text-gray-700">Tiempo *</label>
+                    <input type="text" id="edit-tiempo" [(ngModel)]="productoEdit.tiempo" name="editTiempo" required
+                        placeholder="Ej: 30 días, 2 semanas..."
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm" />
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" (click)="cerrarModalEditar()"
+                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para actualizar Imagen y Stock -->
+<div *ngIf="isModalActualizarOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 bg-blue-500">
+            <h3 class="text-lg font-medium text-white">
+                Actualizar imagen o stock
+            </h3>
+            <button (click)="cerrarModalActualizar()" class="text-white hover:text-gray-200">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6">
+
+            <!-- Input para editar la imagen -->
+            <div>
+                <label for="imagen" class="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                <div class="mb-4">
+                    <img [src]="previewImageUrl ? previewImageUrl : nuevaImagen" alt="Producto"
+                        class="max-w-full max-h-60 rounded mt-2 mx-auto" />
+                </div>
+                <ngx-dropzone (change)="onSelect($event)">
+                    <ngx-dropzone-label>Agrega la nueva imagen aqui</ngx-dropzone-label>
+                    <ngx-dropzone-preview *ngFor="let f of files" [removable]="true" (removed)="onRemove(f)">
+                        <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                    </ngx-dropzone-preview>
+                </ngx-dropzone>
+            </div>
+            <div class="mt-2 flex justify-end">
+                <button (click)="actualizarImagen()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Guardar imagen
+                </button>
+            </div>
+
+            <!-- Sección para actualizar el stock -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700">Incrementar stock:</label>
+                <div class="flex items-center mt-1">
+                    <!-- Mostrar stock actual -->
+                    <span class="text-gray-800 font-medium mr-2">{{ productoSeleccionado.stock }}</span>
+                    <!-- Botón para editar el stock -->
+                    <button (click)="editandoStock = !editandoStock" class="text-blue-600 hover:text-blue-900">
+                        <!-- Ícono de lápiz -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 4H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Input para editar el stock -->
+                <div *ngIf="editandoStock" class="mt-3">
+                    <input type="number" [(ngModel)]="nuevoStock" placeholder="Ingrese el incremento del nuevo stock"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                    <div class="mt-2 flex justify-end">
+                        <button (click)="actualizarStock()"
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Guardar stock
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+/* Estilos adicionales para el componente de maquinarias */
+.estado-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.modal-backdrop {
+  backdrop-filter: blur(2px);
+}
+
+.table-header {
+  @apply sticky top-0 bg-gray-100;
+}
+
+/* Animaciones para transiciones suaves */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects para botones de acción */
+.action-button {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.action-button:hover {
+  transform: scale(1.1);
+}
+
+/* Estilos para mensajes de estado */
+.message-success {
+  @apply border-l-4 border-green-500 bg-green-50 p-4 mb-4;
+}
+
+.message-error {
+  @apply border-l-4 border-red-500 bg-red-50 p-4 mb-4;
+} 

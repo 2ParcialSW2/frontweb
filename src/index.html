@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MRP-Pepito</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+  <!-- ✅ SCRIPT: Garantiza retorno a /pedidos desde Stripe PRESERVANDO parámetros -->
+  <script>
+    (function() {
+      // Solo ejecutar si hay parámetros de Stripe en la URL
+      if (window.location.search.includes('session_id') || window.location.search.includes('payment=')) {
+        console.log('🔄 SCRIPT: Detectado retorno de Stripe, preservando parámetros');
+
+        // Si NO estamos en /pedidos, redirigir CON los parámetros
+        if (window.location.pathname !== '/pedidos') {
+          console.log('🔄 SCRIPT: Redirigiendo desde', window.location.pathname, 'a /pedidos CON parámetros');
+          const params = window.location.search;
+          window.location.href = '/pedidos' + params;
+        } else {
+          // Ya estamos en /pedidos, MANTENER los parámetros para que Angular los procese
+          console.log('✅ SCRIPT: Ya en /pedidos, manteniendo parámetros para Angular:', window.location.search);
+          // NO limpiar la URL aquí - dejar que Angular la procese
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

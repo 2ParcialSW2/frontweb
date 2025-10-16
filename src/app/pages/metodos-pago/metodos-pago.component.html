@@ -1,0 +1,168 @@
+<!-- Métodos de Pago -->
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Métodos de Pago</h1>
+    <p class="mt-2 text-gray-600">Gestión de métodos de pago del sistema</p>
+  </div>
+
+  <!-- Search and Actions Panel -->
+  <div class="bg-white rounded-lg shadow mb-6">
+    <div class="p-6">
+      <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div class="flex-1 max-w-md">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Buscar métodos de pago..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button
+            (click)="abrirFormularioCrear()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center gap-2"
+            [disabled]="cargando">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Método
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Loading Spinner -->
+  <div *ngIf="cargando" class="bg-white rounded-lg shadow">
+    <div class="flex justify-center items-center p-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  </div>
+  <!-- Content -->
+  <div *ngIf="!cargando">
+    <div class="bg-white rounded-lg shadow">
+      <div *ngIf="metodosPago.length === 0" class="p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No hay métodos de pago</h3>
+        <p class="mt-1 text-sm text-gray-500">Comience creando un nuevo método de pago.</p>
+      </div>
+      <div *ngIf="metodosPago.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let metodoPago of metodosPago" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ metodoPago.id }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ metodoPago.nombre }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900">{{ metodoPago.descripcion }}</div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <div class="flex space-x-2 justify-center">
+                  <button
+                    (click)="abrirFormularioEditar(metodoPago)"
+                    class="text-green-600 hover:text-green-900"
+                    title="Editar">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    (click)="eliminarMetodoPago(metodoPago)"
+                    class="text-red-600 hover:text-red-900"
+                    title="Eliminar">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Formulario -->
+  <div *ngIf="mostrarFormulario" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-gray-800">
+          {{ modoEdicion ? 'Editar Método de Pago' : 'Nuevo Método de Pago' }}
+        </h3>
+        <button (click)="cerrarFormulario()" class="text-gray-500 hover:text-gray-700">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="metodoPagoForm" (ngSubmit)="guardarMetodoPago()">
+        <div class="mb-4">
+          <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
+            Nombre *
+          </label>
+          <input
+            type="text"
+            id="nombre"
+            formControlName="nombre"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ej: Efectivo, Tarjeta de Crédito">
+          <div *ngIf="metodoPagoForm.get('nombre')?.errors && metodoPagoForm.get('nombre')?.touched"
+               class="text-red-500 text-sm mt-1">
+            <span *ngIf="metodoPagoForm.get('nombre')?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="metodoPagoForm.get('nombre')?.errors?.['minlength']">Mínimo 2 caracteres</span>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">
+            Descripción *
+          </label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Descripción del método de pago">
+          </textarea>
+          <div *ngIf="metodoPagoForm.get('descripcion')?.errors && metodoPagoForm.get('descripcion')?.touched"
+               class="text-red-500 text-sm mt-1">
+            <span *ngIf="metodoPagoForm.get('descripcion')?.errors?.['required']">La descripción es requerida</span>
+            <span *ngIf="metodoPagoForm.get('descripcion')?.errors?.['minlength']">Mínimo 5 caracteres</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="submit"
+            [disabled]="!metodoPagoForm.valid || cargando"
+            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition duration-200">
+            {{ modoEdicion ? 'Actualizar' : 'Crear' }}
+          </button>
+          <button
+            type="button"
+            (click)="cerrarFormulario()"
+            class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

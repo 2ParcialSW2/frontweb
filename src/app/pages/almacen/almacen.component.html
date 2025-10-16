@@ -1,0 +1,348 @@
+<div class="p-4 sm:ml-60 pt-20 bg-gray-50 min-h-screen">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Gestión de Almacenes</h1>
+    <p class="text-gray-600">Administra los almacenes del sistema</p>
+  </div>
+
+  <!-- Panel de filtros y acciones -->
+  <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <div
+      class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+    >
+      <!-- Buscador -->
+      <div class="relative flex-grow max-w-md">
+        <div
+          class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+        >
+          <svg
+            class="w-4 h-4 text-gray-500"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 20"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+            />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="filtro"
+          (input)="buscarAlmacenes()"
+          placeholder="Buscar almacen..."
+          class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <!-- Botón para registrar usuario -->
+      <button
+        (click)="activeRegisterForm()"
+        type="button"
+        class="flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 transition duration-150 ease-in-out"
+      >
+        <svg
+          class="w-4 h-4 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        Nuevo Almacen
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de almacen -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th scope="col" class="px-6 py-3">ID</th>
+            <th scope="col" class="px-6 py-3">Nombre</th>
+            <th scope="col" class="px-6 py-3">Capacidad</th>
+            <th scope="col" class="px-6 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let almacen of almacenFiltrados"
+            class="border-b hover:bg-gray-50 transition-colors"
+          >
+            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+              {{ almacen.id }}
+            </td>
+            <td class="px-6 py-4">{{ almacen.nombre }}</td>
+            <td class="px-6 py-4">{{ almacen.capacidad }}</td>
+            <td class="px-6 py-4">
+              <div class="flex space-x-2">
+                <button
+                  (click)="openModalToUpdateAlmacen(almacen)"
+                  class="text-blue-600 hover:text-blue-900"
+                  title="Editar usuario"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  (click)="deleteAlmacen(almacen)"
+                  class="text-red-600 hover:text-red-900"
+                  title="Eliminar usuario"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Estado vacío -->
+          <tr *ngIf="!almacenes || almacenFiltrados.length === 0">
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                ></path>
+              </svg>
+              <h3 class="mt-2 text-sm font-semibold text-gray-900">
+                No hay almacenes
+              </h3>
+              <p class="mt-1 text-sm text-gray-500">
+                Comienza por crear una nuevo almacen.
+              </p>
+              <div class="mt-6">
+                <button
+                  (click)="activeRegisterForm()"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg
+                    class="-ml-1 mr-2 h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    ></path>
+                  </svg>
+                  Nuevo Almacen
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para registrar almacen -->
+<div
+  *ngIf="isModalRegisterAlmacenOpen"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden"
+  >
+    <div class="flex items-center justify-between px-6 py-4 bg-blue-600">
+      <h3 class="text-lg font-medium text-white">Registrar nuevo almacen</h3>
+      <button
+        (click)="closeRegisterAlmacenModal()"
+        class="text-white hover:text-gray-200"
+      >
+        <svg
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <form (submit)="createAlmacen()" class="p-6">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label for="nombre" class="block text-sm font-medium text-gray-700"
+            >Nombre del Almacen *</label
+          >
+          <input
+            type="text"
+            id="nombre"
+            [(ngModel)]="nombreAlmacen"
+            name="nombre"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+          />
+        </div>
+        <div>
+          <label for="capacidad" class="block text-sm font-medium text-gray-700"
+            >Capacidad *</label
+          >
+          <input
+            type="number"
+            id="capacidad"
+            [(ngModel)]="capacidadAlmacen"
+            name="capacidad"
+            required
+            min="0.1"
+            step="0.1"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+          />
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end space-x-3">
+        <button
+          type="button"
+          (click)="closeRegisterAlmacenModal()"
+          class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Registrar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para actualizar almacen -->
+<div
+  *ngIf="isModalUpdateAlmacenOpen"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden"
+  >
+    <div class="flex items-center justify-between px-6 py-4 bg-blue-600">
+      <h3 class="text-lg font-medium text-white">Actualizar almacen</h3>
+      <button
+        (click)="closeUpdateAlmacenModal()"
+        class="text-white hover:text-gray-200"
+      >
+        <svg
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <form (submit)="updateAlmacen()" class="p-6">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label
+            for="usernameUpdate"
+            class="block text-sm font-medium text-gray-700"
+            >Nombre del almacen*</label
+          >
+          <input
+            type="text"
+            id="usernameUpdate"
+            [(ngModel)]="almacenUpdate"
+            name="usernameUpdate"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+          />
+        </div>
+        <div>
+          <label
+            for="capacidadUpdate"
+            class="block text-sm font-medium text-gray-700"
+            >Capacidad *</label
+          >
+          <input
+            type="number"
+            id="capacidadUpdate"
+            [(ngModel)]="capacidadAlmacenUpdate"
+            name="capacidadUpdate"
+            required
+            min="0.1"
+            step="0.1"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+          />
+        </div>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeUpdateAlmacenModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
