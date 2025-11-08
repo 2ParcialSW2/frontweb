@@ -1,43 +1,106 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { GraphQLService } from './graphql.service';
 import { Bitacora } from '../models/bitacora.model';
-import { environment } from '../enviroment';
-import { AuthService } from './auth.service';
 
+/**
+ * Interfaz para la respuesta GraphQL de Bitacora
+ */
+interface GraphQLBitacora {
+  id: string;
+  accion: string;
+  detalles?: string | null;
+  fecha: string;
+  direccionIp?: string | null;
+  usuario?: {
+    id: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+  } | null;
+}
+
+/**
+ * Servicio para gestionar bitácoras usando GraphQL
+ * 
+ * Migrado de REST a GraphQL manteniendo la misma interfaz pública
+ * para compatibilidad con componentes existentes.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class BitacoraService {
-  private apiUrl = environment.apiUrl + 'bitacora';
+  constructor(private graphql: GraphQLService) {}
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  // Obtener todos los eventos de la bitácora
+  /**
+   * Obtiene todos los eventos de la bitácora
+   * 
+   * @returns Observable con array de bitácoras
+   */
   getBitacoras(): Observable<Bitacora[]> {
-    const token = this.authService.obtenerToken();
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-    return this.http.get<any>(`${this.apiUrl}`, { headers }).pipe(
-      map(resp => {
-        if (resp && resp.data && Array.isArray(resp.data)) {
-          return resp.data;
-        } else if (Array.isArray(resp)) {
-          return resp;
-        } else {
-          console.error('Formato de respuesta inesperado en getBitacoras:', resp);
-          return [];
+    const query = `
+      query {
+        getAllBitacoras {
+          id
+          accion
+          detalles
+          fecha
+          direccionIp
+          usuario {
+            id
+            nombre
+            apellido
+            email
+          }
         }
+      }
+    `;
+
+    return this.graphql.query<{ getAllBitacoras: GraphQLBitacora[] }>(query).pipe(
+      map(response => {
+        return response.getAllBitacoras.map(bitacora => this.mapGraphQLToBitacora(bitacora));
       })
     );
   }
 
-  // Obtener un evento de la bitácora por su ID
+  /**
+   * Obtiene un evento de la bitácora por su ID
+   * 
+   * ⚠️ NO DISPONIBLE DIRECTAMENTE EN GRAPHQL
+   * Se puede obtener todas las bitácoras y filtrar por ID.
+   * 
+   * @param id - ID de la bitácora
+   * @returns Observable con la bitácora
+   */
   getBitacoraById(id: number): Observable<Bitacora> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.authService.obtenerToken()}`
-    });
+    return this.getBitacoras().pipe(
+      map(bitacoras => {
+        const bitacora = bitacoras.find(b => b.id === id);
+        if (!bitacora) {
+          throw new Error(`Bitácora con ID ${id} no encontrada`);
+        }
+        return bitacora;
+      })
+    );
+  }
 
-    return this.http.get<Bitacora>(`${this.apiUrl}/${id}`, { headers });
+  /**
+   * Mapea una bitácora de GraphQL al formato esperado por los componentes
+   * 
+   * @param graphqlBitacora - Bitácora en formato GraphQL
+   * @returns Bitácora en formato TypeScript
+   */
+  private mapGraphQLToBitacora(graphqlBitacora: GraphQLBitacora): Bitacora {
+    return {
+      id: parseInt(graphqlBitacora.id, 10),
+      accion: graphqlBitacora.accion,
+      detalles: graphqlBitacora.detalles || '',
+      fecha: new Date(graphqlBitacora.fecha),
+      direccionIp: graphqlBitacora.direccionIp || '',
+      nombreUsuario: graphqlBitacora.usuario 
+        ? `${graphqlBitacora.usuario.nombre} ${graphqlBitacora.usuario.apellido}` 
+        : ''
+    };
   }
 }

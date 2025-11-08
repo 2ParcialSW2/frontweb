@@ -75,8 +75,8 @@
                             {{ data.id }}
                         </td>
                         <td class="px-6 py-4">{{ data.pedidoId }}</td>
-                        <td class="px-6 py-4">{{ data.detalles?.[0]?.nombreProducto || 'N/A' }}</td>
-                        <td class="px-6 py-4">{{ data.detalles?.[0]?.cantidad || 'N/A' }}</td>
+                        <td class="px-6 py-4">{{ data.detalles && data.detalles.length > 0 ? data.detalles[0].nombreProducto : 'N/A' }}</td>
+                        <td class="px-6 py-4">{{ data.detalles && data.detalles.length > 0 ? data.detalles[0].cantidad : 'N/A' }}</td>
                         <td class="px-6 py-4">{{ data.motivo }}</td>
                         <td class="px-6 py-4">{{ data.fecha | date:'dd/MM/yyyy h:mm a' }}</td>
                         <td class="px-6 py-4">{{ data.usuarioNombre }}</td>
