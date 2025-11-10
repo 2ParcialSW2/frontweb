@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common'
@@ -9,6 +9,8 @@ import { DetallePedido, Pedido } from '../../models/pedido.model';
 import { UserService } from '../../services/user.service';
 import { Usuario } from '../../models/usuario.model';
 import { Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-devoluciones',
@@ -17,7 +19,7 @@ import { Observable } from 'rxjs';
   templateUrl: './devoluciones.component.html',
   styleUrl: './devoluciones.component.css'
 })
-export class DevolucionesComponent implements OnInit {
+export class DevolucionesComponent implements OnInit, OnDestroy {
   datasFiltradas: DevolucionResponseDTO[] = []; // visibles según filtro
   filtro: string = '';
   devoluciones: DevolucionResponseDTO[] = [];
@@ -35,6 +37,10 @@ export class DevolucionesComponent implements OnInit {
   listaDePedidos: Pedido[] = [];
   filtroUsuarioId: number | string = 'todos';
   filtroPedidoId: number | string = 'todos';
+  clienteSeleccionado: any = null; // Para mostrar automáticamente el cliente del pedido
+
+  // Subject para el debounce del input del pedido
+  private pedidoIdSubject = new Subject<string>();
 
   constructor(
     private devolucionService: DevolucionesService,
@@ -46,6 +52,20 @@ export class DevolucionesComponent implements OnInit {
     this.getDevoluciones();
     this.cargarUsuarios();
     this.cargarPedidos();
+
+    // Configurar el debounce para el pedido ID
+    this.pedidoIdSubject.pipe(
+      debounceTime(500), // Esperar 500ms después del último input
+      distinctUntilChanged() // Solo proceder si el valor cambió
+    ).subscribe(pedidoId => {
+      if (pedidoId && pedidoId.trim() !== '') {
+        this.buscarPedidoPorId(pedidoId);
+      } else {
+        // Limpiar datos cuando el input está vacío
+        this.productosDelPedido = [];
+        this.clienteSeleccionado = null;
+      }
+    });
   }
 
   cargarUsuarios(): void {
@@ -150,23 +170,53 @@ export class DevolucionesComponent implements OnInit {
 
   onPedidoIdChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    const pedidoId = target ? parseInt(target.value, 10) : 0;
+    const pedidoIdStr = target ? target.value : '';
+    
+    // Enviar el valor al Subject para aplicar debounce
+    this.pedidoIdSubject.next(pedidoIdStr);
+  }
+
+  // Método separado para buscar el pedido (usado por el debounce)
+  private buscarPedidoPorId(pedidoIdStr: string): void {
+    const pedidoId = parseInt(pedidoIdStr, 10);
 
     if (!pedidoId || isNaN(pedidoId)) {
       this.productosDelPedido = [];
+      this.clienteSeleccionado = null;
+      this.nuevaDevolucion.usuario_id = 0;
       return;
     }
 
-    this.pedidoService.obtenerProductosPedido(pedidoId).subscribe({
+    // Obtener información completa del pedido para extraer el cliente
+    this.pedidoService.obtenerPedido(pedidoId).subscribe({
       next: (response) => {
-        this.productosDelPedido = response.data;
+        const pedido = response.data;
+        
+        // Automáticamente asignar el usuario (cliente) del pedido como usuario de la devolución
+        if (pedido.usuario && pedido.usuario.id) {
+          this.nuevaDevolucion.usuario_id = pedido.usuario.id;
+          this.clienteSeleccionado = pedido.usuario;
+          console.log('Cliente automáticamente asignado:', pedido.usuario);
+        } else {
+          console.warn('El pedido no tiene información de usuario');
+          this.clienteSeleccionado = null;
+          this.nuevaDevolucion.usuario_id = 0;
+        }
+        
+        // Cargar productos del pedido
+        this.productosDelPedido = pedido.detalle_pedidos || [];
+        console.log('Productos del pedido cargados:', this.productosDelPedido);
+        
         if (this.productosDelPedido.length === 0) {
           Swal.fire('Aviso', 'Los productos de este pedido ya han sido devueltos.', 'info');
         }
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error al obtener pedido:', error);
         this.productosDelPedido = [];
-        //Swal.fire('Error', 'No se pudieron cargar los productos del pedido seleccionado.', 'error');
+        this.clienteSeleccionado = null;
+        this.nuevaDevolucion.usuario_id = 0;
+        Swal.fire('Error', 'No se pudo obtener la información del pedido seleccionado.', 'error');
       }
     });
   }
@@ -175,6 +225,7 @@ export class DevolucionesComponent implements OnInit {
     this.nuevaDevolucion = { fecha: new Date().toISOString(), motivo: '', descripcion: '', importe_total: 0, estado: true, usuario_id: 0, pedido_id: 0 };
     this.isModalRegisterOpen = true;
     this.productosDelPedido = [];
+    this.clienteSeleccionado = null; // Limpiar cliente seleccionado
   }
 
   createDevolucion(): void {
@@ -205,6 +256,30 @@ export class DevolucionesComponent implements OnInit {
   openDetailModal(): void {
     this.nuevoDetalle = { detallePedidoId: 0, cantidad: 1, motivo_detalle: '' };
     this.isModalDetailOpen = true;
+    
+    // Cargar productos basándose en la nueva devolución creada
+    if (this.nuevaDevolucionId) {
+      this.devolucionService.getDevolucion(this.nuevaDevolucionId).subscribe({
+        next: (devolucion) => {
+          console.log('Devolución obtenida:', devolucion); // Debug
+          if (devolucion.pedidoId) {
+            this.pedidoService.obtenerProductosPedido(devolucion.pedidoId).subscribe({
+              next: (response) => {
+                this.productosDelPedido = response.data;
+                console.log('Productos del pedido en modal:', this.productosDelPedido); // Debug
+              },
+              error: (error) => {
+                console.error('Error al obtener productos del pedido:', error);
+                this.productosDelPedido = [];
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error al obtener devolución:', error);
+        }
+      });
+    }
   }
 
   createDetalleDevolucion(): void {
@@ -307,5 +382,10 @@ export class DevolucionesComponent implements OnInit {
     this.isModalDetailOpen = false;
     this.nuevaDevolucionId = null;
     this.productosDelPedido = [];
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar el Subject para evitar memory leaks
+    this.pedidoIdSubject.complete();
   }
 }

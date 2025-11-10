@@ -2,5 +2,5 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Importa Flowbite después de Tailwind */
+/* Importa Flowbite después de las directivas de Tailwind */
 @import "flowbite";

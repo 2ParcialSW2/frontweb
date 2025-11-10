@@ -87,8 +87,8 @@ export class ReportesComponent implements OnInit {
     this.cargandoCompras = true;
     this.comprasService.getCompras().subscribe({
       next: (data) => {
-        this.comprasOriginal = data;
-        this.compras = [...data];
+        this.comprasOriginal = data.data;
+        this.compras = [...data.data];
         this.cargandoCompras = false;
       },
       error: (error) => {

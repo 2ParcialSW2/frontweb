@@ -1111,68 +1111,45 @@ export class PedidosComponent implements OnInit {
       });
     }
   }// Método para cargar detalles completos del pedido para el modal
-  cargarDetallesCompletos(pedidoId: number): void {
-    this.cargando = true;
+  // ✅ MÉTODO CORREGIDO - Reemplaza tu método actual
+cargarDetallesCompletos(pedidoId: number): void {
+  console.log('🔄 Cargando detalles completos para pedido ID:', pedidoId);
+  this.cargando = true;
 
-    // ✅ Usar el nuevo endpoint que devuelve productos completos
-    this.pedidoService.obtenerProductosPedido(pedidoId).subscribe({
-      next: (response) => {
-        if (response.data && this.pedidoDetalle) {          // ✅ Mapear la nueva estructura de datos del backend
-          this.pedidoDetalle.detalle_pedidos = response.data.map(item => ({
-            id: item.detalleId,
-            cantidad: item.cantidad,
-            precioUnitario: item.precioUnitario,
-            precio_unitario: item.precioUnitario,
-            importe_total: item.importe_total,
-            subtotal: item.importe_total,
-            importe_total_desc: item.importe_total_desc,
-            estado: item.estado,
-            producto: {
-              id: item.productoId,
-              nombre: item.nombreProducto,
-              descripcion: item.descripcionProducto,
-              imagen: item.imagenProducto,
-              tiempoProduccion: item.tiempoProduccion,
-              stockDisponible: item.stockDisponible,
-              stockMinimo: item.stockMinimo,
-              precioUnitario: item.precioUnitario,
-              categoria: item.categoriaId ? {
-                id: item.categoriaId,
-                nombre: item.nombreCategoria
-              } : null
-            }
-          }));
-          console.log('Detalles con productos completos cargados:', this.pedidoDetalle.detalle_pedidos);
+  // ✅ USAR DIRECTAMENTE obtenerPedido que ya funciona correctamente
+  this.pedidoService.obtenerPedido(pedidoId).subscribe({
+    next: (response) => {
+      console.log('📦 Respuesta completa del pedido:', response);
+      
+      if (response.data && this.pedidoDetalle) {
+        // ✅ CONSERVAR TODA LA INFORMACIÓN TAL COMO VIENE DEL BACKEND
+        this.pedidoDetalle.detalle_pedidos = response.data.detalle_pedidos || [];
+        
+        console.log('✅ Detalles asignados directamente:', this.pedidoDetalle.detalle_pedidos);
+        
+        // Debug específico para verificar productos
+        if (this.pedidoDetalle.detalle_pedidos.length > 0) {
+          this.pedidoDetalle.detalle_pedidos.forEach((detalle, index) => {
+            console.log(`📋 Detalle ${index + 1}:`, {
+              id: detalle.id,
+              cantidad: detalle.cantidad,
+              precioUnitario: detalle.precioUnitario,
+              producto: detalle.producto,
+              producto_nombre: detalle.producto?.nombre
+            });
+          });
         }
-        this.cargando = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar detalles completos:', error);
-        this.cargando = false;
-
-        // ✅ Fallback: si el nuevo endpoint falla, usar el método anterior
-        console.log('Intentando con el método anterior...');
-        this.detallePedidoService.obtenerPorPedido(pedidoId).subscribe({
-          next: (response) => {
-            if (response.data && this.pedidoDetalle) {
-              // Usar el método anterior con búsqueda manual de productos
-              this.pedidoDetalle.detalle_pedidos = response.data.map(detalle => ({
-                ...detalle,
-                producto: this.buscarProductoPorDetalle(detalle)
-              }));
-              console.log('Detalles cargados con método fallback:', this.pedidoDetalle.detalle_pedidos);
-            }
-            this.cargando = false;
-          },
-          error: (fallbackError) => {
-            console.error('Error en método fallback:', fallbackError);
-            this.cargando = false;
-            Swal.fire('Error', 'No se pudieron cargar los detalles del pedido', 'error');
-          }
-        });
       }
-    });
-  }
+      
+      this.cargando = false;
+    },
+    error: (error) => {
+      console.error('❌ Error al cargar detalles completos:', error);
+      this.cargando = false;
+      Swal.fire('Error', 'No se pudieron cargar los detalles del pedido', 'error');
+    }
+  });
+}
 
   // Método auxiliar para buscar producto en la lista local
   private buscarProductoPorDetalle(detalle: any): any {

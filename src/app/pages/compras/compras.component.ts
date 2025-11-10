@@ -120,7 +120,7 @@ export class ComprasComponent implements OnInit {
         console.log('Compras recibidas (sin procesar):', JSON.stringify(data));
         
         // Verificamos que cada compra tenga un proveedorId válido
-        this.compras = data.map(compra => {
+        this.compras = data.data.map((compra: any) => {
           // Depuración detallada de cada compra
           console.log('Procesando compra:', compra);
           console.log('ID de la compra:', compra.id);
