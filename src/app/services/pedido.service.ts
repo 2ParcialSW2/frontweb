@@ -46,6 +46,41 @@ interface GraphQLPedido {
 }
 
 /**
+ * Interfaces para confirmación de pedidos
+ */
+export interface StockAfectado {
+  productoId: number;
+  nombreProducto: string;
+  cantidadAnterior: number;
+  cantidadActual: number;
+  cantidadDeducida: number;
+}
+
+export interface ConfirmacionPedidoResponse {
+  success: boolean;
+  message: string;
+  pedidoId?: number | null;
+  estadoAnterior?: boolean | null;
+  estadoActual?: boolean | null;
+  stockAfectado?: StockAfectado[] | null;
+}
+
+interface GraphQLConfirmacionResponse {
+  success: boolean;
+  message: string;
+  pedidoId?: string | null;
+  estadoAnterior?: boolean | null;
+  estadoActual?: boolean | null;
+  stockAfectado?: {
+    productoId: string;
+    nombreProducto: string;
+    cantidadAnterior: number;
+    cantidadActual: number;
+    cantidadDeducida: number;
+  }[] | null;
+}
+
+/**
  * Servicio para gestionar pedidos usando GraphQL
  * 
  * Migrado de REST a GraphQL manteniendo la misma interfaz pública
@@ -551,6 +586,108 @@ export class PedidoService {
           nombre: detalle.producto.nombre
         } : undefined
       })) : []
+    };
+  }
+
+  // =================== MÉTODOS PARA CONFIRMACIÓN ADMIN ===================
+
+  /**
+   * Confirma un pedido cambiando su estado a true y procesando el stock
+   * 
+   * @param pedidoId ID del pedido a confirmar
+   * @returns Observable con respuesta de confirmación
+   */
+  confirmarPedido(pedidoId: number): Observable<ApiResponse<ConfirmacionPedidoResponse>> {
+    const mutation = `
+      mutation ConfirmarPedido($pedidoId: ID!) {
+        confirmarPedido(pedidoId: $pedidoId) {
+          success
+          message
+          pedidoId
+          estadoAnterior
+          estadoActual
+          stockAfectado {
+            productoId
+            nombreProducto
+            cantidadAnterior
+            cantidadActual
+            cantidadDeducida
+          }
+        }
+      }
+    `;
+
+    const variables = { pedidoId: pedidoId.toString() };
+
+    return this.graphql.mutate<{ confirmarPedido: GraphQLConfirmacionResponse }>(mutation, variables)
+      .pipe(
+        map(result => ({
+          statusCode: 200,
+          message: result.confirmarPedido.message,
+          data: this.convertGraphQLConfirmacionToConfirmacion(result.confirmarPedido)
+        }))
+      );
+  }
+
+  /**
+   * Rechaza un pedido agregando un motivo
+   * 
+   * @param pedidoId ID del pedido a rechazar
+   * @param motivo Motivo del rechazo
+   * @returns Observable con respuesta de confirmación
+   */
+  rechazarPedido(pedidoId: number, motivo?: string): Observable<ApiResponse<ConfirmacionPedidoResponse>> {
+    const mutation = `
+      mutation RechazarPedido($pedidoId: ID!, $motivo: String) {
+        rechazarPedido(pedidoId: $pedidoId, motivo: $motivo) {
+          success
+          message
+          pedidoId
+          estadoAnterior
+          estadoActual
+          stockAfectado {
+            productoId
+            nombreProducto
+            cantidadAnterior
+            cantidadActual
+            cantidadDeducida
+          }
+        }
+      }
+    `;
+
+    const variables = { 
+      pedidoId: pedidoId.toString(),
+      motivo: motivo || null
+    };
+
+    return this.graphql.mutate<{ rechazarPedido: GraphQLConfirmacionResponse }>(mutation, variables)
+      .pipe(
+        map(result => ({
+          statusCode: 200,
+          message: result.rechazarPedido.message,
+          data: this.convertGraphQLConfirmacionToConfirmacion(result.rechazarPedido)
+        }))
+      );
+  }
+
+  /**
+   * Convierte respuesta GraphQL de confirmación a formato del modelo
+   */
+  private convertGraphQLConfirmacionToConfirmacion(graphqlResponse: GraphQLConfirmacionResponse): ConfirmacionPedidoResponse {
+    return {
+      success: graphqlResponse.success,
+      message: graphqlResponse.message,
+      pedidoId: graphqlResponse.pedidoId ? parseInt(graphqlResponse.pedidoId, 10) : null,
+      estadoAnterior: graphqlResponse.estadoAnterior,
+      estadoActual: graphqlResponse.estadoActual,
+      stockAfectado: graphqlResponse.stockAfectado ? graphqlResponse.stockAfectado.map(stock => ({
+        productoId: parseInt(stock.productoId, 10),
+        nombreProducto: stock.nombreProducto,
+        cantidadAnterior: stock.cantidadAnterior,
+        cantidadActual: stock.cantidadActual,
+        cantidadDeducida: stock.cantidadDeducida
+      })) : null
     };
   }
 }

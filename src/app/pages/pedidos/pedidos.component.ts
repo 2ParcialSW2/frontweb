@@ -1499,6 +1499,148 @@ cargarDetallesCompletos(pedidoId: number): void {
     });
   }
 
+  // =================== NUEVOS MÉTODOS PARA CONFIRMACIÓN ADMIN ===================
+
+  /**
+   * Confirma un pedido pendiente (estado=false) cambiándolo a confirmado (estado=true)
+   * Procesa automáticamente el stock
+   */
+  confirmarPedidoAdmin(pedido: Pedido): void {
+    if (pedido.estado) {
+      Swal.fire('Información', 'Este pedido ya está confirmado', 'info');
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Confirmar Pedido?',
+      html: `
+        <p>Se confirmará el pedido <strong>#${pedido.id}</strong></p>
+        <p>Esta acción:</p>
+        <ul style="text-align: left; margin: 0 auto; display: inline-block;">
+          <li>Cambiará el estado a <strong>CONFIRMADO</strong></li>
+          <li>Deducirá el stock de los productos</li>
+          <li>Procesará todos los detalles del pedido</li>
+        </ul>
+        <p style="color: red; font-weight: bold;">⚠️ Esta acción no se puede deshacer</p>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar pedido',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed && pedido.id) {
+        this.cargando = true;
+
+        this.pedidoService.confirmarPedido(pedido.id).subscribe({
+          next: (response) => {
+            this.cargando = false;
+            
+            if (response.data.success) {
+              // Mostrar información detallada del stock afectado
+              let detalleStock = '';
+              if (response.data.stockAfectado && response.data.stockAfectado.length > 0) {
+                detalleStock = '<h4>Stock procesado:</h4><ul style="text-align: left; margin: 0 auto; display: inline-block;">';
+                response.data.stockAfectado.forEach(stock => {
+                  detalleStock += `<li><strong>${stock.nombreProducto}:</strong> ${stock.cantidadAnterior} → ${stock.cantidadActual} (-${stock.cantidadDeducida})</li>`;
+                });
+                detalleStock += '</ul>';
+              }
+
+              Swal.fire({
+                title: '¡Pedido Confirmado!',
+                html: `
+                  <p>${response.data.message}</p>
+                  ${detalleStock}
+                `,
+                icon: 'success',
+                confirmButtonText: 'OK'
+              });
+              
+              this.cargarPedidos(); // Recargar la lista
+            } else {
+              Swal.fire('Error', response.data.message, 'error');
+            }
+          },
+          error: (error) => {
+            this.cargando = false;
+            console.error('Error al confirmar pedido:', error);
+            Swal.fire('Error', 'Ocurrió un error al confirmar el pedido: ' + (error.error?.message || error.message), 'error');
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Rechaza un pedido pendiente con un motivo
+   */
+  rechazarPedidoAdmin(pedido: Pedido): void {
+    if (pedido.estado) {
+      Swal.fire('Información', 'No se puede rechazar un pedido ya confirmado', 'info');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Rechazar Pedido',
+      html: `
+        <p>¿Por qué desea rechazar el pedido <strong>#${pedido.id}</strong>?</p>
+        <textarea id="motivoRechazo" class="swal2-textarea" placeholder="Ingrese el motivo del rechazo..."></textarea>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Rechazar pedido',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const motivo = (document.getElementById('motivoRechazo') as HTMLTextAreaElement)?.value;
+        if (!motivo?.trim()) {
+          Swal.showValidationMessage('Debe ingresar un motivo para el rechazo');
+          return false;
+        }
+        return motivo.trim();
+      }
+    }).then((result) => {
+      if (result.isConfirmed && pedido.id && result.value) {
+        this.cargando = true;
+
+        this.pedidoService.rechazarPedido(pedido.id, result.value).subscribe({
+          next: (response) => {
+            this.cargando = false;
+            
+            if (response.data.success) {
+              Swal.fire('Pedido Rechazado', response.data.message, 'success');
+              this.cargarPedidos(); // Recargar la lista
+            } else {
+              Swal.fire('Error', response.data.message, 'error');
+            }
+          },
+          error: (error) => {
+            this.cargando = false;
+            console.error('Error al rechazar pedido:', error);
+            Swal.fire('Error', 'Ocurrió un error al rechazar el pedido: ' + (error.error?.message || error.message), 'error');
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Verifica si un pedido se puede confirmar (está pendiente y tiene productos)
+   */
+  puedeConfirmarPedido(pedido: Pedido): boolean {
+    return pedido.estado === false && !!pedido.detalle_pedidos && pedido.detalle_pedidos.length > 0;
+  }
+
+  /**
+   * Verifica si un pedido se puede rechazar (está pendiente)
+   */
+  puedeRechazarPedido(pedido: Pedido): boolean {
+    return pedido.estado === false;
+  }
+
   // TrackBy function para mejorar el rendimiento en *ngFor de detalles
   trackByDetalleId(index: number, detalle: any): any {
     return detalle.id || index;
