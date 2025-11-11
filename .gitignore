@@ -44,4 +44,9 @@ Thumbs.db
 # Environment variables (IMPORTANTE: No subir claves sensibles)
 .env
 .env.local
-environment.local.ts
+environment.ts
+
+# Archivos de entorno específicos de Angular
+src/app/enviroment.ts
+src/environments/environment.ts
+src/environments/environment.*.ts

@@ -36,18 +36,23 @@ export class OpenaiService {
    * @returns Observable con objeto que contiene query y phone
    */
   obtenerSugerenciasReportes(prompt: string): Observable<{query: string, phone: string}> {
+    console.log('🤖 [OPENAI] Iniciando consulta a OpenAI con prompt:', prompt);
+    
     if (!environment.openaiApiKey || environment.openaiApiKey === '') {
+      console.error('❌ [OPENAI] API Key no configurada');
       throw new Error('OpenAI API Key no configurada. Configúrala en el archivo .env');
     }
+
+    console.log('🔑 [OPENAI] API Key encontrada, longitud:', environment.openaiApiKey.length);
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${environment.openaiApiKey}`
     });
 
-    const systemMessage = `Eres un experto en MySQL especializado en convertir lenguaje natural en español a consultas SQL exactas para un sistema MRP de carpintería.
+    const systemMessage = `Eres un experto en PostgreSQL especializado en convertir lenguaje natural en español a consultas SQL exactas para un sistema MRP de carpintería.
 
-ESQUEMA COMPLETO DE BASE DE DATOS MYSQL:
+ESQUEMA COMPLETO DE BASE DE DATOS POSTGRESQL:
 
 USUARIOS Y SEGURIDAD:
 - usuario (id, nombre, apellido, email, telefono, password, estado, rol_id, created_at, updated_at)
@@ -84,21 +89,25 @@ MAQUINARIA Y ALMACENES:
 - almacen (id, nombre, descripcion, ubicacion, capacidad_maxima, activo, created_at, updated_at)
 - sector (id, nombre, descripcion, activo, created_at, updated_at)
 
-INSTRUCCIONES:
+INSTRUCCIONES POSTGRESQL:
 1. El usuario te dará una descripción de lo que quiere consultar Y un número de teléfono
 2. Extrae el número de teléfono mencionado
-3. Convierte la descripción a consulta SQL MySQL usando las tablas exactas del esquema
-4. Para fechas usa: CURDATE(), DATE_SUB(), INTERVAL, etc.
-5. Incluye JOINs cuando sea necesario para obtener información relacionada
-6. Usa ORDER BY para ordenar resultados de manera lógica
-7. Responde ÚNICAMENTE en formato JSON: {"query": "consulta aquí", "phone": "número aquí"}
+3. Convierte la descripción a consulta SQL PostgreSQL usando las tablas exactas del esquema
+4. Para fechas usa: CURRENT_DATE, INTERVAL '1 month', EXTRACT(), DATE_TRUNC()
+5. NO uses MONTH(), YEAR(), CURDATE(), DATE_SUB() (esas son de MySQL)
+6. Incluye JOINs cuando sea necesario para obtener información relacionada
+7. Usa ORDER BY para ordenar resultados de manera lógica
+8. Responde ÚNICAMENTE en formato JSON: {"query": "consulta aquí", "phone": "número aquí"}
 
-EJEMPLOS:
+EJEMPLOS POSTGRESQL:
 Usuario: "compras del último mes al número 75512345"
-Respuesta: {"query": "SELECT c.*, p.nombre as proveedor FROM compra c JOIN proveedor p ON c.proveedor_id = p.id WHERE c.fecha_compra >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) ORDER BY c.fecha_compra DESC;", "phone": "75512345"}
+Respuesta: {"query": "SELECT c.*, p.nombre as proveedor FROM compra c JOIN proveedor p ON c.proveedor_id = p.id WHERE c.fecha_compra >= CURRENT_DATE - INTERVAL '1 month' ORDER BY c.fecha_compra DESC;", "phone": "75512345"}
 
 Usuario: "productos vendidos esta semana enviar al 70123456"
-Respuesta: {"query": "SELECT pr.nombre, SUM(dp.cantidad) as total_vendido FROM detalle_pedido dp JOIN producto pr ON dp.producto_id = pr.id JOIN pedido pe ON dp.pedido_id = pe.id WHERE pe.fecha >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK) GROUP BY pr.id, pr.nombre ORDER BY total_vendido DESC;", "phone": "70123456"}`;
+Respuesta: {"query": "SELECT pr.nombre, SUM(dp.cantidad) as total_vendido FROM detalle_pedido dp JOIN producto pr ON dp.producto_id = pr.id JOIN pedido pe ON dp.pedido_id = pe.id WHERE pe.fecha >= CURRENT_DATE - INTERVAL '1 week' GROUP BY pr.id, pr.nombre ORDER BY total_vendido DESC;", "phone": "70123456"}
+
+Usuario: "pedidos de enero 2024 al 62207102"
+Respuesta: {"query": "SELECT * FROM pedido WHERE fecha >= '2024-01-01' AND fecha < '2024-02-01' ORDER BY fecha;", "phone": "62207102"}`;
 
     const requestBody: OpenAIRequest = {
       model: 'gpt-3.5-turbo',
@@ -117,20 +126,33 @@ Respuesta: {"query": "SELECT pr.nombre, SUM(dp.cantidad) as total_vendido FROM d
     };
 
     return new Observable<{query: string, phone: string}>(observer => {
+      console.log('📤 [OPENAI] Enviando petición a OpenAI...');
+      console.log('📦 [OPENAI] Request body:', JSON.stringify(requestBody, null, 2));
+      
       this.http.post<OpenAIResponse>(this.apiUrl, requestBody, { headers })
         .subscribe({
           next: (response) => {
+            console.log('📥 [OPENAI] Respuesta recibida:', response);
+            
             try {
               const content = response.choices[0]?.message?.content || '{"query": "", "phone": ""}';
+              console.log('📄 [OPENAI] Contenido de la respuesta:', content);
+              
               const resultado = JSON.parse(content);
+              console.log('✅ [OPENAI] JSON parseado exitosamente:', resultado);
+              
               observer.next(resultado);
               observer.complete();
             } catch (error) {
+              console.error('❌ [OPENAI] Error al parsear JSON:', error);
+              console.error('❌ [OPENAI] Contenido que causó el error:', response.choices[0]?.message?.content);
               observer.error('Error al procesar la respuesta de OpenAI');
             }
           },
           error: (error) => {
-            console.error('Error al consultar OpenAI:', error);
+            console.error('❌ [OPENAI] Error en petición HTTP:', error);
+            console.error('❌ [OPENAI] Status:', error.status);
+            console.error('❌ [OPENAI] Headers:', error.headers);
             observer.error('Error al generar consulta SQL. Verifica tu API Key de OpenAI.');
           }
         });

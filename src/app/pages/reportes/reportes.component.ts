@@ -785,7 +785,11 @@ export class ReportesComponent implements OnInit {
    * Consulta a OpenAI para generar reportes específicos
    */
   consultarIA(): void {
+    console.log('🤖 [REPORTES] Iniciando consulta a OpenAI...');
+    console.log('📝 [REPORTES] Prompt del usuario:', this.promptReportes.trim());
+    
     if (!this.promptReportes.trim()) {
+      console.warn('⚠️ [REPORTES] Prompt vacío, cancelando consulta');
       return;
     }
 
@@ -796,6 +800,10 @@ export class ReportesComponent implements OnInit {
     this.openaiService.obtenerSugerenciasReportes(this.promptReportes.trim())
       .subscribe({
         next: (resultado) => {
+          console.log('✅ [REPORTES] Respuesta de OpenAI recibida:', resultado);
+          console.log('📊 [REPORTES] Query SQL:', resultado.query);
+          console.log('📞 [REPORTES] Teléfono:', resultado.phone);
+          
           this.respuestaIA = `SQL generado:\n${resultado.query}\n\nTeléfono: ${resultado.phone}`;
           
           // Enviar automáticamente al webhook
@@ -804,9 +812,9 @@ export class ReportesComponent implements OnInit {
           this.cargandoIA = false;
         },
         error: (error) => {
+          console.error('❌ [REPORTES] Error al consultar IA:', error);
           this.errorIA = error;
           this.cargandoIA = false;
-          console.error('Error al consultar IA:', error);
         }
       });
   }
@@ -815,19 +823,30 @@ export class ReportesComponent implements OnInit {
    * Envía la consulta SQL y teléfono al webhook para generar reporte por WhatsApp
    */
   private enviarReporteWhatsapp(query: string, phone: string): void {
+    console.log('📱 [WEBHOOK] Preparando envío al webhook...');
+    
     const payload = {
       query: query,
       phone: phone
     };
+    
+    console.log('📦 [WEBHOOK] Payload a enviar:', JSON.stringify(payload, null, 2));
+    console.log('🌐 [WEBHOOK] URL destino: https://superadorn-unsolicitated-taina.ngrok-free.dev/webhook/reporte');
 
-    this.http.post('http://192.168.0.133:10000/webhook/reporte', payload)
+    this.http.post('https://superadorn-unsolicitated-taina.ngrok-free.dev/webhook/reporte', payload)
       .subscribe({
         next: (response) => {
-          console.log('Reporte enviado exitosamente:', response);
+          console.log('✅ [WEBHOOK] Reporte enviado exitosamente:', response);
           this.respuestaIA += '\n\n✅ Reporte enviado por WhatsApp correctamente!';
         },
         error: (error) => {
-          console.error('Error al enviar reporte:', error);
+          console.error('❌ [WEBHOOK] Error al enviar reporte:', error);
+          console.error('❌ [WEBHOOK] Detalles del error:', {
+            status: error.status,
+            statusText: error.statusText,
+            url: error.url,
+            message: error.message
+          });
           this.respuestaIA += '\n\n❌ Error al enviar reporte por WhatsApp';
         }
       });
