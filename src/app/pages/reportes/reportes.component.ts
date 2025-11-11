@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ComprasService } from '../../services/compras.service';
 import { MaterialesService } from '../../services/materiales.service';
 import { ProveedoresService } from '../../services/proveedores.service';
@@ -57,7 +58,8 @@ export class ReportesComponent implements OnInit {
     private comprasService: ComprasService,
     private materialesService: MaterialesService,
     private proveedoresService: ProveedoresService,
-    private openaiService: OpenaiService
+    private openaiService: OpenaiService,
+    private http: HttpClient
   ) {}
   
   ngOnInit(): void {
@@ -794,13 +796,39 @@ export class ReportesComponent implements OnInit {
     this.openaiService.obtenerSugerenciasReportes(this.promptReportes.trim())
       .subscribe({
         next: (resultado) => {
-          this.respuestaIA = `SQL: ${resultado.sql}\n\nTeléfono: ${resultado.telefono}`;
+          this.respuestaIA = `SQL generado:\n${resultado.query}\n\nTeléfono: ${resultado.phone}`;
+          
+          // Enviar automáticamente al webhook
+          this.enviarReporteWhatsapp(resultado.query, resultado.phone);
+          
           this.cargandoIA = false;
         },
         error: (error) => {
           this.errorIA = error;
           this.cargandoIA = false;
           console.error('Error al consultar IA:', error);
+        }
+      });
+  }
+
+  /**
+   * Envía la consulta SQL y teléfono al webhook para generar reporte por WhatsApp
+   */
+  private enviarReporteWhatsapp(query: string, phone: string): void {
+    const payload = {
+      query: query,
+      phone: phone
+    };
+
+    this.http.post('http://192.168.0.133:10000/webhook/reporte', payload)
+      .subscribe({
+        next: (response) => {
+          console.log('Reporte enviado exitosamente:', response);
+          this.respuestaIA += '\n\n✅ Reporte enviado por WhatsApp correctamente!';
+        },
+        error: (error) => {
+          console.error('Error al enviar reporte:', error);
+          this.respuestaIA += '\n\n❌ Error al enviar reporte por WhatsApp';
         }
       });
   }
