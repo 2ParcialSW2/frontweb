@@ -298,12 +298,20 @@ export class ProductoService {
    * @returns Observable con el producto actualizado
    */
   updateImageProducto(id: number, url: string): Observable<any> {
-    // Alternativa: Obtener el producto y actualizarlo con la nueva imagen
-    return this.getProducto(id).pipe(
-      switchMap(producto => {
-        producto.imagen = url;
-        return this.updateProducto(id, producto);
-      })
+    const mutation = `
+      mutation UpdateProductImage($id: ID!, $imagen: String!) {
+        updateProductImage(id: $id, imagen: $imagen) {
+          id
+          imagen
+        }
+      }
+    `;
+
+    return this.graphql.mutate<{ updateProductImage: { id: string; imagen: string | null } }>(mutation, {
+      id: id.toString(),
+      imagen: url
+    }).pipe(
+      map(res => res.updateProductImage)
     );
   }
 
