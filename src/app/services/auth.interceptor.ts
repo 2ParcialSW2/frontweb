@@ -11,6 +11,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Excluir Cloudinary (no modificar sus headers)
   const isCloudinary = req.url.includes('api.cloudinary.com');
+  
+  // Excluir OpenAI (no modificar sus headers)
+  const isOpenAI = req.url.includes('api.openai.com');
 
   // Endpoints públicos que no requieren token
   const publicEndpoints = [
@@ -21,8 +24,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Verificar si es una petición GraphQL
   const isGraphQL = req.url.includes('/graphql');
 
-  // Para Cloudinary, no modificar la petición
-  if (isCloudinary) {
+  // Para Cloudinary y OpenAI, no modificar la petición
+  if (isCloudinary || isOpenAI) {
     return next(req);
   }
 
@@ -48,7 +51,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Manejar errores de autenticación
+      // NO procesar errores de OpenAI o Cloudinary
+      if (isOpenAI || isCloudinary) {
+        return throwError(() => error);
+      }
+
+      // Manejar errores de autenticación solo para APIs internas
       if (error.status === 401 && !isPublic) {
         console.warn('⚠️ [AuthInterceptor] Error 401 - No autorizado');
         

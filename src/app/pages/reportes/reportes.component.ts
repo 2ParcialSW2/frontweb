@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ComprasService } from '../../services/compras.service';
 import { MaterialesService } from '../../services/materiales.service';
 import { ProveedoresService } from '../../services/proveedores.service';
+import { OpenaiService } from '../../services/openai.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -46,10 +48,18 @@ export class ReportesComponent implements OnInit {
   cargandoCompras: boolean = false;
   cargandoMateriales: boolean = false;
   
+  // Propiedades para IA
+  promptReportes: string = '';
+  respuestaIA: string = '';
+  errorIA: string = '';
+  cargandoIA: boolean = false;
+  
   constructor(
     private comprasService: ComprasService,
     private materialesService: MaterialesService,
-    private proveedoresService: ProveedoresService
+    private proveedoresService: ProveedoresService,
+    private openaiService: OpenaiService,
+    private http: HttpClient
   ) {}
   
   ngOnInit(): void {
@@ -87,8 +97,8 @@ export class ReportesComponent implements OnInit {
     this.cargandoCompras = true;
     this.comprasService.getCompras().subscribe({
       next: (data) => {
-        this.comprasOriginal = data;
-        this.compras = [...data];
+        this.comprasOriginal = data.data;
+        this.compras = [...data.data];
         this.cargandoCompras = false;
       },
       error: (error) => {
@@ -765,5 +775,89 @@ export class ReportesComponent implements OnInit {
     }
     
     return num;
+  }
+
+  // ===========================
+  // MÉTODOS PARA ASISTENTE IA
+  // ===========================
+
+  /**
+   * Consulta a OpenAI para generar reportes específicos
+   */
+  consultarIA(): void {
+    console.log('🤖 [REPORTES] Iniciando consulta a OpenAI...');
+    console.log('📝 [REPORTES] Prompt del usuario:', this.promptReportes.trim());
+    
+    if (!this.promptReportes.trim()) {
+      console.warn('⚠️ [REPORTES] Prompt vacío, cancelando consulta');
+      return;
+    }
+
+    this.cargandoIA = true;
+    this.respuestaIA = '';
+    this.errorIA = '';
+
+    this.openaiService.obtenerSugerenciasReportes(this.promptReportes.trim())
+      .subscribe({
+        next: (resultado) => {
+          console.log('✅ [REPORTES] Respuesta de OpenAI recibida:', resultado);
+          console.log('📊 [REPORTES] Query SQL:', resultado.query);
+          console.log('📞 [REPORTES] Teléfono:', resultado.phone);
+          
+          this.respuestaIA = `SQL generado:\n${resultado.query}\n\nTeléfono: ${resultado.phone}`;
+          
+          // Enviar automáticamente al webhook
+          this.enviarReporteWhatsapp(resultado.query, resultado.phone);
+          
+          this.cargandoIA = false;
+        },
+        error: (error) => {
+          console.error('❌ [REPORTES] Error al consultar IA:', error);
+          this.errorIA = error;
+          this.cargandoIA = false;
+        }
+      });
+  }
+
+  /**
+   * Envía la consulta SQL y teléfono al webhook para generar reporte por WhatsApp
+   */
+  private enviarReporteWhatsapp(query: string, phone: string): void {
+    console.log('📱 [WEBHOOK] Preparando envío al webhook...');
+    
+    const payload = {
+      query: query,
+      phone: phone
+    };
+    
+    console.log('📦 [WEBHOOK] Payload a enviar:', JSON.stringify(payload, null, 2));
+    console.log('🌐 [WEBHOOK] URL destino: https://superadorn-unsolicitated-taina.ngrok-free.dev/webhook/reporte');
+
+    this.http.post('https://superadorn-unsolicitated-taina.ngrok-free.dev/webhook/reporte', payload)
+      .subscribe({
+        next: (response) => {
+          console.log('✅ [WEBHOOK] Reporte enviado exitosamente:', response);
+          this.respuestaIA += '\n\n✅ Reporte enviado por WhatsApp correctamente!';
+        },
+        error: (error) => {
+          console.error('❌ [WEBHOOK] Error al enviar reporte:', error);
+          console.error('❌ [WEBHOOK] Detalles del error:', {
+            status: error.status,
+            statusText: error.statusText,
+            url: error.url,
+            message: error.message
+          });
+          this.respuestaIA += '\n\n❌ Error al enviar reporte por WhatsApp';
+        }
+      });
+  }
+
+  /**
+   * Limpia el prompt y los reportes generados por IA
+   */
+  limpiarPrompt(): void {
+    this.promptReportes = '';
+    this.respuestaIA = '';
+    this.errorIA = '';
   }
 }

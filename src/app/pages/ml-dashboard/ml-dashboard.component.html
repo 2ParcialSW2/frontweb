@@ -1,0 +1,277 @@
+<div class="ml-dashboard-container">
+  <div class="dashboard-header">
+    <h1>🤖 Dashboard de Machine Learning</h1>
+    <p>Predicciones y análisis inteligente de productos</p>
+    <div class="service-status" [ngClass]="mlServiceAvailable ? 'status-online' : 'status-offline'">
+      <span *ngIf="mlServiceAvailable">🟢 Servicio ML Conectado</span>
+      <span *ngIf="!mlServiceAvailable">🔴 Modo Demo (Datos Mock)</span>
+    </div>
+  </div>
+
+  <!-- Sección de Forecast -->
+  <div class="forecast-section">
+    <div class="section-header">
+      <h2>📈 Predicción de Ventas - Próximos 30 días</h2>
+      <div class="category-selector">
+        <label for="category">Categoría:</label>
+        <select 
+          id="category" 
+          [(ngModel)]="selectedCategory" 
+          (change)="onCategoryChange()"
+          class="form-control"
+        >
+          <option *ngFor="let cat of categories" [value]="cat">
+            {{ cat | titlecase }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="forecast-cards" *ngIf="!isLoadingForecast">
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card income">
+          <div class="card-icon">💰</div>
+          <div class="card-content">
+            <h3>${{ formatNumber(totalIngresos) }}</h3>
+            <p>Ingresos Estimados</p>
+          </div>
+        </div>
+
+        <div class="summary-card units">
+          <div class="card-icon">📦</div>
+          <div class="card-content">
+            <h3>{{ formatNumber(totalUnidades) }}</h3>
+            <p>Unidades Proyectadas</p>
+          </div>
+        </div>
+
+        <div class="summary-card confidence">
+          <div class="card-icon">🎯</div>
+          <div class="card-content">
+            <h3>{{ (promedioConfianza * 100) | number:'1.0-0' }}%</h3>
+            <p>Confianza Promedio</p>
+            <div class="confidence-stars">
+              {{ getConfidenceStars(promedioConfianza) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card alerts">
+          <div class="card-icon">⚠️</div>
+          <div class="card-content">
+            <h3>{{ alertas.length }}</h3>
+            <p>Alertas Detectadas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alertas -->
+      <div class="alerts-container" *ngIf="alertas.length > 0">
+        <h4>🚨 Alertas del Sistema</h4>
+        <div class="alert" *ngFor="let alerta of alertas">
+          {{ alerta }}
+        </div>
+      </div>
+
+      <!-- Forecast Chart -->
+      <div class="forecast-chart">
+        <h4>📊 Proyección por Día (Próximos 10 días)</h4>
+        <div class="chart-container">
+          <div *ngFor="let prediction of forecastData.slice(0, 10); let i = index" class="chart-bar">
+            <div class="bar-container">
+              <div 
+                class="bar-fill" 
+                [style.height.%]="(prediction.prediccion_max / 15) * 100"
+                [style.background-color]="getBarColor(i)"
+                [title]="prediction.fecha + ': ' + prediction.prediccion_min + '-' + prediction.prediccion_max + ' unidades'"
+              ></div>
+            </div>
+            <span class="bar-label">{{ prediction.fecha.split('-')[2] }}</span>
+          </div>
+        </div>
+        
+        <!-- Chart Legend -->
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #3498db;"></div>
+            <span>Rango de predicción (min-max)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #27ae60;"></div>
+            <span>Confianza > 80%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingForecast" class="loading">
+      <div class="spinner"></div>
+      <p>Generando predicción con IA...</p>
+    </div>
+  </div>
+
+  <!-- Sección de Clustering Analysis -->
+  <div class="clustering-section">
+    <div class="section-header">
+      <h2>🏷️ Análisis de Clusters - Clasificación Inteligente</h2>
+    </div>
+
+    <div class="cluster-grid" *ngIf="!isLoadingClusters">
+      <div 
+        *ngFor="let cluster of clusterAnalysis" 
+        class="cluster-card"
+        [ngClass]="getClusterBadgeClass(cluster.nombre_cluster)"
+      >
+        <div class="cluster-header">
+          <h3>{{ cluster.nombre_cluster }}</h3>
+          <span class="cluster-id">Cluster {{ cluster.cluster_id }}</span>
+        </div>
+
+        <div class="cluster-stats">
+          <div class="stat">
+            <span class="stat-label">🔢 Productos:</span>
+            <span class="stat-value">{{ cluster.caracteristicas.cantidad_productos }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">📊 Margen:</span>
+            <span class="stat-value">{{ (cluster.caracteristicas.margen_promedio * 100) | number:'1.1-1' }}%</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">💰 Precio Prom:</span>
+            <span class="stat-value">${{ cluster.caracteristicas.precio_promedio | number:'1.0-0' }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">⏱️ Tiempo Fab:</span>
+            <span class="stat-value">{{ cluster.caracteristicas.tiempo_fabricacion_promedio | number:'1.1-1' }}h</span>
+          </div>
+        </div>
+
+        <div class="cluster-recommendations">
+          <h4>💡 Recomendaciones:</h4>
+          <ul>
+            <li *ngFor="let rec of cluster.recomendaciones.slice(0, 3)">{{ rec }}</li>
+          </ul>
+        </div>
+
+        <div class="cluster-priority">
+          <span 
+            class="priority-badge" 
+            [ngClass]="getPriorityLevel(cluster.caracteristicas.margen_promedio).class"
+          >
+            Prioridad: {{ getPriorityLevel(cluster.caracteristicas.margen_promedio).text }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingClusters" class="loading">
+      <div class="spinner"></div>
+      <p>Analizando clusters con IA...</p>
+    </div>
+  </div>
+
+  <!-- Sección de Productos con ML -->
+  <div class="products-ml-section">
+    <div class="section-header">
+      <h2>📦 Análisis ML de Productos</h2>
+      <button 
+        class="btn-analyze-all"
+        (click)="analyzeAllProducts()"
+        [disabled]="isLoadingProducts"
+      >
+        🔍 Analizar Todos
+      </button>
+    </div>
+
+    <div class="products-table">
+      <div class="table-header">
+        <div>Producto</div>
+        <div>Precio/Costo/Margen</div>
+        <div>Análisis ML</div>
+        <div>Acción</div>
+      </div>
+
+      <div 
+        *ngFor="let producto of productos" 
+        class="table-row"
+      >
+        <div class="product-info">
+          <strong>{{ producto.nombre }}</strong>
+          <small>{{ producto.categoria || 'Sin categoría' | titlecase }}</small>
+          <div class="product-time" *ngIf="producto.tiempoFabricacion">
+            ⏱️ {{ producto.tiempoFabricacion }}h fabricación
+          </div>
+        </div>
+
+        <div class="price-info">
+          <div class="price-row">
+            <span class="price">Precio: ${{ producto.precio || 0 | number:'1.0-0' }}</span>
+            <span class="cost">Costo: ${{ producto.costo || 0 | number:'1.0-0' }}</span>
+          </div>
+          <div class="margin-info" *ngIf="producto.precio && producto.costo">
+            <span class="margin" [ngClass]="calculateMargin(producto) > 40 ? 'margin-good' : calculateMargin(producto) > 20 ? 'margin-ok' : 'margin-low'">
+              📊 Margen: {{ calculateMargin(producto) | number:'1.0-0' }}%
+            </span>
+          </div>
+        </div>
+
+        <div class="cluster-info">
+          <div *ngIf="producto.cluster_prediction" class="cluster-result">
+            <span 
+              class="cluster-badge" 
+              [ngClass]="getClusterBadgeClass(producto.cluster_prediction.nombre_cluster)"
+            >
+              {{ producto.cluster_prediction.nombre_cluster }}
+            </span>
+            <div class="cluster-details">
+              <small class="ml-margin">
+                🤖 Margen ML: {{ (producto.cluster_prediction.margen_calculado * 100) | number:'1.1-1' }}%
+              </small>
+              <div class="recommendations-mini">
+                <span *ngFor="let rec of producto.cluster_prediction.recomendaciones.slice(0, 2)" 
+                      class="mini-rec">{{ rec }}</span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!producto.cluster_prediction && !producto.isAnalyzing" class="no-analysis">
+            <span class="no-ml-text">🤖 Sin análisis ML</span>
+            <small>Click en "Analizar" para clasificar</small>
+          </div>
+          <div *ngIf="producto.isAnalyzing" class="analyzing">
+            <div class="mini-spinner"></div>
+            <small>Analizando con IA...</small>
+          </div>
+        </div>
+
+        <div class="action-cell">
+          <button 
+            class="btn-analyze"
+            (click)="analyzeProduct(producto)"
+            [disabled]="producto.isAnalyzing || !validateProductForAnalysis(producto)"
+            [title]="!validateProductForAnalysis(producto) ? 'Producto necesita precio y costo válidos' : 'Analizar con Machine Learning'"
+          >
+            <span *ngIf="!producto.isAnalyzing">🔍 Analizar</span>
+            <span *ngIf="producto.isAnalyzing">⏳</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="products-summary">
+      <div class="summary-item">
+        <span class="summary-label">Total Productos:</span>
+        <span class="summary-value">{{ productos.length }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Analizados:</span>
+        <span class="summary-value">{{ getProductosAnalizados() }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Pendientes:</span>
+        <span class="summary-value">{{ getProductosPendientes() }}</span>
+      </div>
+    </div>
+  </div>
+</div>

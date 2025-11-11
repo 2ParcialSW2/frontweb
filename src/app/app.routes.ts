@@ -24,6 +24,7 @@ import { PedidosComponent } from './pages/pedidos/pedidos.component';
 import { MetodosPagoComponent } from './pages/metodos-pago/metodos-pago.component';
 import { OrdenProductoComponent } from './pages/orden-producto/orden-producto.component';
 import { DevolucionesComponent } from './pages/devoluciones/devoluciones.component';
+import { MlDashboardComponent } from './pages/ml-dashboard/ml-dashboard.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -50,6 +51,7 @@ export const routes: Routes = [
   { path: 'bitacoras', component: BitacoraComponent },
   { path: 'ordenes', component: OrdenProductoComponent },
   { path: 'devoluciones', component: DevolucionesComponent },
+  { path: 'ml-dashboard', component: MlDashboardComponent },
   // { path: '', redirectTo: 'login', pathMatch: 'full' },  //anterior pagina de inicio por defecto
   { path: '', redirectTo: 'mrp', pathMatch: 'full' },
   { path: '**', redirectTo: '/mrp' },

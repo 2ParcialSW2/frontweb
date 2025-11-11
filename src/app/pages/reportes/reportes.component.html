@@ -22,6 +22,78 @@
     </button>
   </div>
 
+  <!-- Asistente IA para Reportes -->
+  <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg shadow-md p-6 mb-6 border border-purple-200">
+    <div class="flex items-center mb-4">
+      <div class="flex-shrink-0">
+        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-semibold text-gray-900">📊 Generador IA de Reportes</h3>
+        <p class="text-sm text-gray-600">Describe qué reportes necesitas y obtenlos generados automáticamente</p>
+      </div>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label for="promptReportes" class="block text-sm font-medium text-gray-700 mb-2">
+          💬 ¿Qué reportes necesitas y a qué número enviarlos?
+        </label>
+        <textarea 
+          id="promptReportes"
+          [(ngModel)]="promptReportes"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 resize-none"
+          placeholder="Ej: Pedidos del último mes al 75512345, materiales con stock bajo enviar al 70123456, órdenes de producción completadas al 69987654..."
+          [disabled]="cargandoIA"
+        ></textarea>
+      </div>
+      
+      <div class="flex space-x-3">
+        <button 
+          (click)="consultarIA()"
+          class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="!promptReportes.trim() || cargandoIA"
+        >
+          <svg *ngIf="!cargandoIA" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <svg *ngIf="cargandoIA" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ cargandoIA ? 'Generando...' : 'Generar Reportes' }}
+        </button>
+        
+        <button 
+          (click)="limpiarPrompt()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+          [disabled]="cargandoIA"
+        >
+          🗑️ Limpiar
+        </button>
+      </div>
+      
+      <!-- Reportes generados por IA -->
+      <div *ngIf="respuestaIA" class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+        <h4 class="font-semibold text-gray-900 mb-2 flex items-center">
+          <span class="text-blue-600 mr-2">📊</span> Reportes Generados
+        </h4>
+        <div class="text-gray-700 whitespace-pre-line">{{ respuestaIA }}</div>
+      </div>
+      
+      <!-- Mensaje de error -->
+      <div *ngIf="errorIA" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <span class="text-red-600 mr-2">⚠️</span>
+          <span class="text-red-700">{{ errorIA }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Reporte de Compras -->
   <div *ngIf="reporteActivo === 'compras'" class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-xl font-semibold mb-6">Reporte de Compras</h2>

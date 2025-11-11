@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GraphQLService } from './graphql.service';
+import { environment } from '../enviroment';
 import {
   DevolucionCreateDTO,
   DevolucionResponseDTO,
@@ -19,26 +21,18 @@ interface GraphQLDevolucion {
   descripcion?: string | null;
   importe_total?: number | null;
   estado?: boolean | null;
-  usuario?: {
-    id: string;
-    nombre: string;
-    apellido: string;
-    email: string;
-  } | null;
-  pedido?: {
-    id: string;
-    fecha?: string | null;
-    descripcion?: string | null;
-  } | null;
+  usuarioId?: string | null;
+  usuarioNombre?: string | null;
+  usuarioEmail?: string | null;
+  pedidoId?: string | null;
+  pedidoFecha?: string | null;
   detalles?: {
     id: string;
+    detallePedidoId?: number | null;
+    nombreProducto?: string | null;
     cantidad?: number | null;
-    importe_Total?: number | null;
+    precioUnitario?: number | null;
     motivo_detalle?: string | null;
-    detalle_pedido?: {
-      id: string;
-      cantidad: number;
-    } | null;
   }[] | null;
 }
 
@@ -52,7 +46,10 @@ interface GraphQLDevolucion {
   providedIn: 'root'
 })
 export class DevolucionesService {
-  constructor(private graphql: GraphQLService) {}
+  constructor(
+    private graphql: GraphQLService, 
+    private http: HttpClient
+  ) {}
 
   /**
    * Obtiene todas las devoluciones
@@ -69,26 +66,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -117,26 +106,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -163,26 +144,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -220,26 +193,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -302,26 +267,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -352,26 +309,18 @@ export class DevolucionesService {
           descripcion
           importe_total
           estado
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
-          pedido {
-            id
-            fecha
-            descripcion
-          }
+          usuarioId
+          usuarioNombre
+          usuarioEmail
+          pedidoId
+          pedidoFecha
           detalles {
             id
+            detallePedidoId
+            nombreProducto
             cantidad
-            importe_Total
+            precioUnitario
             motivo_detalle
-            detalle_pedido {
-              id
-              cantidad
-            }
           }
         }
       }
@@ -420,21 +369,56 @@ export class DevolucionesService {
   }
 
   /**
-   * Crea un detalle de devolución
-   * 
-   * ⚠️ NO DISPONIBLE DIRECTAMENTE EN GRAPHQL
-   * Los detalles se manejan dentro de la devolución.
+   * Crea un detalle de devolución usando REST API
    * 
    * @param id - ID de la devolución
    * @param data - Datos del detalle a crear
    * @returns Observable con el detalle creado
    */
   postDetalles(id: number, data: DetalleDevolucionCreateDTO): Observable<DetalleDevolucionDTO> {
-    return throwError(() => new Error(
-      'postDetalles no está disponible directamente en GraphQL. ' +
-      'Los detalles de devolución se manejan dentro de la devolución. ' +
-      'Actualiza la devolución completa con updateDevolucion().'
-    ));
+    const baseUrl = environment.apiUrl.endsWith('/') 
+      ? environment.apiUrl.slice(0, -1) 
+      : environment.apiUrl;
+    const url = `${baseUrl}/api/devoluciones/${id}/detalles`;
+    
+    // Convertir DetalleDevolucionCreateDTO al formato esperado por el backend REST
+    const requestBody = {
+      detallePedidoId: data.detallePedidoId,
+      cantidad: data.cantidad,
+      motivo_detalle: data.motivo_detalle || ''
+    };
+
+    // Interfaz para tipar la respuesta del backend
+    interface DetalleResponse {
+      id: number;
+      detallePedidoId: number;
+      nombreProducto: string;
+      cantidad: number;
+      precioUnitario: number;
+      motivo_detalle: string;
+    }
+
+    return this.http.post<DetalleResponse>(url, requestBody).pipe(
+      map(response => {
+        // Convertir la respuesta del backend a DetalleDevolucionDTO
+        return {
+          id: response.id,
+          cantidad: response.cantidad,
+          importe_Total: response.precioUnitario * response.cantidad,
+          motivo_detalle: response.motivo_detalle,
+          devolucion: '',
+          detalle_pedido: {
+            id: response.detallePedidoId,
+            producto: { id: 0, nombre: response.nombreProducto },
+            cantidad: response.cantidad,
+            importe_Total: response.precioUnitario * response.cantidad,
+            importe_Total_Desc: 0,
+            precioUnitario: response.precioUnitario,
+            estado: false
+          }
+        } as DetalleDevolucionDTO;
+      })
+    );
   }
 
   /**
@@ -491,23 +475,18 @@ export class DevolucionesService {
       descripcion: graphqlDevolucion.descripcion || '',
       importe_total: graphqlDevolucion.importe_total || 0,
       estado: graphqlDevolucion.estado !== null && graphqlDevolucion.estado !== undefined ? graphqlDevolucion.estado : false,
-      usuarioId: graphqlDevolucion.usuario ? parseInt(graphqlDevolucion.usuario.id, 10) : 0,
-      usuarioNombre: graphqlDevolucion.usuario 
-        ? `${graphqlDevolucion.usuario.nombre} ${graphqlDevolucion.usuario.apellido}` 
-        : '',
-      usuarioEmail: graphqlDevolucion.usuario ? graphqlDevolucion.usuario.email : '',
-      pedidoId: graphqlDevolucion.pedido ? parseInt(graphqlDevolucion.pedido.id, 10) : 0,
-      pedidoFecha: graphqlDevolucion.pedido ? (graphqlDevolucion.pedido.fecha || '') : '',
+      usuarioId: graphqlDevolucion.usuarioId ? parseInt(graphqlDevolucion.usuarioId, 10) : 0,
+      usuarioNombre: graphqlDevolucion.usuarioNombre || '',
+      usuarioEmail: graphqlDevolucion.usuarioEmail || '',
+      pedidoId: graphqlDevolucion.pedidoId ? parseInt(graphqlDevolucion.pedidoId, 10) : 0,
+      pedidoFecha: graphqlDevolucion.pedidoFecha || '',
       detalles: graphqlDevolucion.detalles ? graphqlDevolucion.detalles.map(detalle => {
-        // El nombre del producto no está disponible directamente en GraphQL
-        // Se usa un valor por defecto o se puede obtener desde otra fuente
-        const nombreProducto = 'Producto desconocido';
         return {
           id: parseInt(detalle.id, 10),
-          detallePedidoId: detalle.detalle_pedido ? parseInt(detalle.detalle_pedido.id, 10) : 0,
-          nombreProducto: nombreProducto,
+          detallePedidoId: detalle.detallePedidoId || 0,
+          nombreProducto: detalle.nombreProducto || 'Producto no disponible',
           cantidad: detalle.cantidad || 0,
-          precioUnitario: detalle.importe_Total ? detalle.importe_Total / (detalle.cantidad || 1) : 0,
+          precioUnitario: detalle.precioUnitario || 0,
           motivo_detalle: detalle.motivo_detalle || ''
         };
       }) : []

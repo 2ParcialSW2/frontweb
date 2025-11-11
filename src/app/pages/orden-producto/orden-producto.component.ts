@@ -370,4 +370,12 @@ export class OrdenProductoComponent implements OnInit {
     const item = this.productos.find(p => p.id === id);
     return item ? item.tipo : 'producto';
   }
+
+  /**
+   * Abre el dashboard de carpintería en una nueva pestaña
+   */
+  abrirDashboard(): void {
+    const dashboardUrl = 'https://dashboardcarpinteria-kdnepbpqfncdcrpfte3rfu.streamlit.app/';
+    window.open(dashboardUrl, '_blank');
+  }
 }

@@ -167,14 +167,18 @@
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" />
                 </div>
                 <div>
-                    <label for="usuario_id" class="block text-sm font-medium text-gray-700">Usuario *</label>
-                    <select id="usuario_id" [(ngModel)]="nuevaDevolucion.usuario_id" name="usuario_id" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <option [ngValue]="0" disabled>Seleccione un usuario</option>
-                        <option *ngFor="let usuario of listaDeUsuarios" [ngValue]="usuario.id">
-                            {{ usuario.nombre_completo }} ({{ usuario.email }})
-                        </option>
-                    </select>
+                    <label for="usuario_id" class="block text-sm font-medium text-gray-700">Cliente de la Devolución *</label>
+                    <div *ngIf="clienteSeleccionado; else noClienteSelected" 
+                         class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-md shadow-sm text-sm">
+                        <span class="font-medium">{{ clienteSeleccionado.nombre_completo }}</span>
+                        <span class="text-gray-600 ml-2">({{ clienteSeleccionado.email }})</span>
+                        <input type="hidden" [(ngModel)]="nuevaDevolucion.usuario_id" name="usuario_id" required />
+                    </div>
+                    <ng-template #noClienteSelected>
+                        <div class="mt-1 block w-full px-3 py-2 border border-red-300 bg-red-50 rounded-md shadow-sm text-sm text-red-700">
+                            Seleccione primero un pedido para cargar el cliente automáticamente
+                        </div>
+                    </ng-template>
                 </div>
             </div>
 
@@ -267,8 +271,8 @@
                         required
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
                         <option [ngValue]="0" disabled>Seleccione un producto</option>
-                        <option *ngFor="let producto of productosDelPedido" [ngValue]="producto.detalleId">
-                            {{ producto.nombreProducto }} (Cant: {{ producto.cantidad }})
+                        <option *ngFor="let detalle of productosDelPedido" [ngValue]="detalle.id">
+                            {{ detalle.producto?.nombre || 'Producto sin nombre' }} (Cant: {{ detalle.cantidad }})
                         </option>
                     </select>
                 </div>

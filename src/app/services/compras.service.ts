@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, input } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GraphQLService } from './graphql.service';
@@ -42,9 +42,9 @@ export class ComprasService {
    * 
    * @returns Observable con array de compras
    */
-  getCompras(): Observable<Compra[]> {
+  getCompras(): Observable<{statusCode: number, message: string, data: Compra[]}> {
     const query = `
-      query {
+      query GetAllCompras {
         getAllCompras {
           id
           estado
@@ -64,11 +64,13 @@ export class ComprasService {
         }
       }
     `;
-
+  
     return this.graphql.query<{ getAllCompras: GraphQLCompra[] }>(query).pipe(
-      map(response => {
-        return response.getAllCompras.map(compra => this.mapGraphQLToCompra(compra));
-      })
+      map(response => ({
+        statusCode: 200,
+        message: 'Compras obtenidas exitosamente',
+        data: response.getAllCompras.map(compra => this.mapGraphQLToCompra(compra))
+      }))
     );
   }
 
@@ -107,47 +109,51 @@ export class ComprasService {
   }
 
   /**
-   * Crea una nueva compra
-   * 
-   * @param compra - Datos de la compra a crear
-   * @returns Observable con la compra creada
-   */
-  createCompra(compra: CompraDTO): Observable<any> {
-    const mutation = `
-      mutation CreateCompra($input: CompraInput!) {
-        createCompra(input: $input) {
+ * Crea una nueva compra
+ * 
+ * @param compra - Datos de la compra a crear
+ * @returns Observable con respuesta API conteniendo la compra creada
+ */
+createCompra(compra: CompraDTO): Observable<{statusCode: number, message: string, data: any}> {
+  const mutation = `
+    mutation CreateCompra($input: CompraInput!) {
+      createCompra(input: $input) {
+        id
+        estado
+        fecha
+        importe_total
+        importe_descuento
+        proveedor {
           id
-          estado
-          fecha
-          importe_total
-          importe_descuento
-          proveedor {
-            id
-            nombre
-          }
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
+          nombre
+        }
+        usuario {
+          id
+          nombre
+          apellido
+          email
         }
       }
-    `;
+    }
+  `;
 
-    const input = {
-      estado: compra.estado,
-      fecha: compra.fecha ? (typeof compra.fecha === 'string' ? compra.fecha : this.formatDate(new Date(compra.fecha))) : null,
-      importe_total: compra.importe_total || null,
-      importe_descuento: compra.importe_descuento || null,
-      proveedor_id: compra.proveedorId.toString(),
-      usuario_id: compra.usuarioId.toString()
-    };
+  const input = {
+    estado: compra.estado,
+    fecha: compra.fecha ? (typeof compra.fecha === 'string' ? compra.fecha : this.formatDate(new Date(compra.fecha))) : null,
+    importe_total: compra.importe_total || null,
+    importe_descuento: compra.importe_descuento || null,
+    proveedor_id: compra.proveedorId.toString(),
+    usuario_id: compra.usuarioId.toString()
+  };
 
-    return this.graphql.mutate<{ createCompra: GraphQLCompra }>(mutation, { input }).pipe(
-      map(response => this.mapGraphQLToCompra(response.createCompra))
-    );
-  }
+  return this.graphql.mutate<{ createCompra: GraphQLCompra }>(mutation, { input }).pipe(
+    map(response => ({
+      statusCode: 201,
+      message: 'Compra creada exitosamente',
+      data: this.mapGraphQLToCompra(response.createCompra)  // ✅ Envuelto en la estructura esperada
+    }))
+  );
+}
 
   /**
    * Actualiza una compra existente
@@ -156,45 +162,56 @@ export class ComprasService {
    * @param compra - Datos actualizados de la compra
    * @returns Observable con la compra actualizada
    */
-  updateCompra(id: number, compra: CompraDTO): Observable<any> {
-    const mutation = `
-      mutation UpdateCompra($id: ID!, $input: CompraInput!) {
-        updateCompra(id: $id, input: $input) {
+  /**
+ * Actualiza una compra existente
+ * 
+ * @param id - ID de la compra a actualizar
+ * @param compra - Datos actualizados de la compra
+ * @returns Observable con respuesta API conteniendo la compra actualizada
+ */
+updateCompra(id: number, compra: CompraDTO): Observable<{statusCode: number, message: string, data: any}> {
+  const mutation = `
+    mutation UpdateCompra($id: ID!, $input: CompraInput!) {
+      updateCompra(id: $id, input: $input) {
+        id
+        estado
+        fecha
+        importe_total
+        importe_descuento
+        proveedor {
           id
-          estado
-          fecha
-          importe_total
-          importe_descuento
-          proveedor {
-            id
-            nombre
-          }
-          usuario {
-            id
-            nombre
-            apellido
-            email
-          }
+          nombre
+        }
+        usuario {
+          id
+          nombre
+          apellido
+          email
         }
       }
-    `;
+    }
+  `;
 
-    const input = {
-      estado: compra.estado,
-      fecha: compra.fecha ? (typeof compra.fecha === 'string' ? compra.fecha : this.formatDate(new Date(compra.fecha))) : null,
-      importe_total: compra.importe_total || null,
-      importe_descuento: compra.importe_descuento || null,
-      proveedor_id: compra.proveedorId.toString(),
-      usuario_id: compra.usuarioId.toString()
-    };
+  const input = {
+    estado: compra.estado || 'PENDIENTE',  // ✅ Campo requerido según schema
+    fecha: compra.fecha ? (typeof compra.fecha === 'string' ? compra.fecha : this.formatDate(new Date(compra.fecha))) : null,
+    importe_total: compra.importe_total || null,
+    importe_descuento: compra.importe_descuento || null,
+    proveedor_id: compra.proveedorId.toString(),  // ✅ Campo requerido según schema
+    usuario_id: compra.usuarioId.toString()       // ✅ Campo requerido según schema
+  };
 
-    return this.graphql.mutate<{ updateCompra: GraphQLCompra }>(mutation, {
-      id: id.toString(),
-      input
-    }).pipe(
-      map(response => this.mapGraphQLToCompra(response.updateCompra))
-    );
-  }
+  return this.graphql.mutate<{ updateCompra: GraphQLCompra }>(mutation, {
+    id: id.toString(),
+    input
+  }).pipe(
+    map(response => ({
+      statusCode: 200,
+      message: 'Compra actualizada exitosamente',
+      data: this.mapGraphQLToCompra(response.updateCompra)
+    }))
+  );
+}
 
   /**
    * Elimina una compra
@@ -325,7 +342,7 @@ export class ComprasService {
    */
   getComprasByFechas(fechaInicio: Date, fechaFin: Date): Observable<any[]> {
     return this.getCompras().pipe(
-      map(compras => compras.filter(compra => {
+      map(compras => compras.data.filter((compra: Compra) => {
         const fechaCompra = new Date(compra.fecha);
         return fechaCompra >= fechaInicio && fechaCompra <= fechaFin;
       }))
@@ -345,7 +362,7 @@ export class ComprasService {
    */
   getComprasByMaterialYFechas(materialId: number, fechaInicio: Date, fechaFin: Date): Observable<any[]> {
     return this.getCompras().pipe(
-      map(compras => compras.filter(compra => {
+      map(compras => compras.data.filter((compra: Compra) => {
         const fechaCompra = new Date(compra.fecha);
         const tieneMaterial = compra.detalles?.some(detalle => detalle.materialId === materialId);
         return fechaCompra >= fechaInicio && fechaCompra <= fechaFin && tieneMaterial;
