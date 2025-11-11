@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ComprasService } from '../../services/compras.service';
 import { MaterialesService } from '../../services/materiales.service';
 import { ProveedoresService } from '../../services/proveedores.service';
+import { OpenaiService } from '../../services/openai.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -46,10 +47,17 @@ export class ReportesComponent implements OnInit {
   cargandoCompras: boolean = false;
   cargandoMateriales: boolean = false;
   
+  // Propiedades para IA
+  promptReportes: string = '';
+  respuestaIA: string = '';
+  errorIA: string = '';
+  cargandoIA: boolean = false;
+  
   constructor(
     private comprasService: ComprasService,
     private materialesService: MaterialesService,
-    private proveedoresService: ProveedoresService
+    private proveedoresService: ProveedoresService,
+    private openaiService: OpenaiService
   ) {}
   
   ngOnInit(): void {
@@ -765,5 +773,44 @@ export class ReportesComponent implements OnInit {
     }
     
     return num;
+  }
+
+  // ===========================
+  // MÉTODOS PARA ASISTENTE IA
+  // ===========================
+
+  /**
+   * Consulta a OpenAI para generar reportes específicos
+   */
+  consultarIA(): void {
+    if (!this.promptReportes.trim()) {
+      return;
+    }
+
+    this.cargandoIA = true;
+    this.respuestaIA = '';
+    this.errorIA = '';
+
+    this.openaiService.obtenerSugerenciasReportes(this.promptReportes.trim())
+      .subscribe({
+        next: (resultado) => {
+          this.respuestaIA = `SQL: ${resultado.sql}\n\nTeléfono: ${resultado.telefono}`;
+          this.cargandoIA = false;
+        },
+        error: (error) => {
+          this.errorIA = error;
+          this.cargandoIA = false;
+          console.error('Error al consultar IA:', error);
+        }
+      });
+  }
+
+  /**
+   * Limpia el prompt y los reportes generados por IA
+   */
+  limpiarPrompt(): void {
+    this.promptReportes = '';
+    this.respuestaIA = '';
+    this.errorIA = '';
   }
 }
